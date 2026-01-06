@@ -3,7 +3,7 @@ import API from '../../../api';
 import './SocietySettings.css';
 
 // 🚀 Render Backend ka URL yahan dalein
-const BACKEND_URL = "https://your-backend-service-link.onrender.com"; 
+const BACKEND_URL = "https://society-ease-backend.onrender.com"; 
 
 function SocietySettings() {
     const [settings, setSettings] = useState({ society_name: '', maintenance_amount: '', qr_image: '' });
