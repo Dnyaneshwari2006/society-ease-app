@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import API from '../../../api';
+import API from '../../../api'; // Aapka axios instance
 import './PaymentPortal.css';
-
-// 🚀 STEP 1: Ise apne Laptop IP se badlein (Jo api.js mein hai)
-const BACKEND_URL = "http://192.168.31.29:5000"; 
 
 function PaymentPortal() {
     const [qrUrl, setQrUrl] = useState('');
@@ -22,8 +19,10 @@ function PaymentPortal() {
                 console.log("Database response:", res.data); 
                 
                 if (res.data && res.data.qr_image) {
-                    // 🚀 STEP 2: localhost ki jagah BACKEND_URL use karein
-                    const fullUrl = `${BACKEND_URL}/uploads/qr_codes/${res.data.qr_image}`;
+                    // ✅ FIX: Cloudinary URL direct use karein. 
+                    // Ab hume BACKEND_URL jodne ki zarurat nahi hai kyunki URL pehle se hi 'https://' hai.
+                    const fullUrl = res.data.qr_image; 
+                    
                     console.log("Loading Image from:", fullUrl);
                     setQrUrl(fullUrl);
                     
@@ -39,7 +38,6 @@ function PaymentPortal() {
         };
         fetchSettings();
     }, []);
-
 
     const handlePayment = async (e) => {
         e.preventDefault();
