@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 require('dotenv').config();
 
 const db = require('./config/db'); 
@@ -13,8 +15,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serving the 'uploads' folder statically is CRITICAL for showing images
-// This allows the browser to access http://localhost:5000/uploads/qr_codes/your-file.png
+// --- CLOUDINARY CONFIGURATION ---
+// Inki values Render ke Environment Variables se aayengi
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'society_qrs',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    },
+});
+const upload = multer({ storage });
+
+// Static folder (purani files ke liye)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 2. Initialize Auth Routes
@@ -22,17 +40,7 @@ const expressRouter = express.Router();
 authRoutes(expressRouter, db); 
 app.use('/api/auth', expressRouter);
 
-// --- MULTER CONFIGURATION (For QR Code Uploads) ---
-const storage = multer.diskStorage({
-    destination: './uploads/qr_codes/',
-    filename: (req, file, cb) => {
-        cb(null, `society_qr_${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-const upload = multer({ storage });
-
 // --- SOCIETY SETTINGS ROUTES ---
-// Fetch society settings (used by Resident Portal and Admin Preview)
 app.get('/api/society/settings', async (req, res) => {
     try {
         const [rows] = await db.query("SELECT * FROM society_settings WHERE id = 1");
@@ -42,34 +50,24 @@ app.get('/api/society/settings', async (req, res) => {
     }
 });
 
-
-// Admin: Update Society Text Details (Name and Maintenance Amount)
 app.put('/api/admin/update-society-settings', async (req, res) => {
     const { society_name, maintenance_amount } = req.body;
-    
     try {
         const query = "UPDATE society_settings SET society_name = ?, maintenance_amount = ? WHERE id = 1";
-        const [result] = await db.query(query, [society_name, maintenance_amount]);
-        
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: "Society settings row not found" });
-        }
-
+        await db.query(query, [society_name, maintenance_amount]);
         res.json({ message: "✅ Society details updated successfully!" });
     } catch (err) {
-        console.error("Database Update Error:", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
-
-// Admin: Upload/Update QR Code Image
+// Cloudinary Upload Route for QR
 app.post('/api/admin/upload-qr', upload.single('qrCode'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-        const qrFilename = req.file.filename;
-        await db.query("UPDATE society_settings SET qr_image = ? WHERE id = 1", [qrFilename]);
-        res.json({ message: "✅ QR Updated successfully!", filename: qrFilename });
+        const qrUrl = req.file.path; // Cloudinary URL (https://res.cloudinary.com/...)
+        await db.query("UPDATE society_settings SET qr_image = ? WHERE id = 1", [qrUrl]);
+        res.json({ message: "✅ QR Updated successfully!", filename: qrUrl });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Upload failed" });
