@@ -1,0 +1,404 @@
+/* ===== SocietySettings.css - Compact Layout ===== */
+
+.settings-container-medium {
+    animation: fadeIn 0.6s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Settings Card */
+.settings-card-medium {
+    max-width: 850px;
+    width: 100%;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.08);
+}
+
+/* Settings Header */
+.settings-header {
+    text-align: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.settings-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.settings-header p {
+    font-size: 0.9rem;
+    color: #718096;
+    line-height: 1.4;
+}
+
+/* Text Settings Form */
+.text-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.input-group-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.input-group-row input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+.input-group-row input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+.input-group-row input::placeholder {
+    color: #a0aec0;
+}
+
+/* Save Button */
+.save-btn {
+    width: 100%;
+    padding: 0.95rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    font-family: inherit;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.save-btn:active {
+    transform: translateY(0);
+}
+
+/* Divider */
+.divider {
+    border: none;
+    border-top: 2px solid #e2e8f0;
+    margin: 1rem 0;
+}
+
+/* Settings Grid - QR Sections */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.qr-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.qr-section span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2d3748;
+    text-align: center;
+}
+
+/* QR Frame - Current Live */
+.qr-frame {
+    width: 100%;
+    height: 250px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+    overflow: hidden;
+}
+
+.qr-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.75rem;
+}
+
+.qr-frame p {
+    font-size: 0.9rem;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+/* Compact Dropzone */
+.compact-dropzone {
+    width: 100%;
+    height: 250px;
+    border: 2px dashed #667eea;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(102, 126, 234, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.compact-dropzone:hover {
+    border-color: #764ba2;
+    background: rgba(102, 126, 234, 0.08);
+    transform: scale(1.02);
+}
+
+.preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.75rem;
+}
+
+.placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.plus {
+    font-size: 2.5rem;
+    color: #667eea;
+    font-weight: 300;
+}
+
+.placeholder p {
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+/* Publish Button */
+.publish-btn {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+    font-family: inherit;
+}
+
+.publish-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.5);
+}
+
+.publish-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.publish-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Admin Management Section */
+.admin-management-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.admin-management-section h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.admin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.admin-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: #f7fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    gap: 2rem;
+}
+
+.admin-item-row .admin-info {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex: 1;
+}
+
+.admin-item-row .admin-info strong {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2d3748;
+    min-width: 100px;
+}
+
+.admin-item-row .admin-info span {
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.admin-item-row .remove-admin-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #c53030;
+    background: white;
+    border: 2px solid #fc5c7d;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.admin-item-row .remove-admin-btn:hover {
+    background: #fc5c7d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(252, 92, 125, 0.3);
+}
+
+.admin-item-row .remove-admin-btn:active {
+    transform: translateY(0);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+    .settings-card-medium {
+        padding: 1.25rem;
+    }
+
+    .settings-header h2 {
+        font-size: 1.35rem;
+    }
+
+    .settings-header p {
+        font-size: 0.85rem;
+    }
+
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .input-group-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .qr-frame,
+    .compact-dropzone {
+        height: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-container-medium {
+        padding: 0.75rem;
+    }
+
+    .settings-card-medium {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .settings-header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.65rem;
+    }
+
+    .settings-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .settings-header p {
+        font-size: 0.8rem;
+    }
+
+    .input-group-row input {
+        padding: 0.75rem 0.85rem;
+        font-size: 0.85rem;
+    }
+
+    .save-btn,
+    .publish-btn {
+        padding: 0.85rem;
+        font-size: 0.85rem;
+    }
+
+    .qr-frame,
+    .compact-dropzone {
+        height: 200px;
+    }
+
+    .qr-section span {
+        font-size: 0.85rem;
+    }
+
+    .plus {
+        font-size: 2rem;
+    }
+
+    .placeholder p {
+        font-size: 0.8rem;
+    }
+}

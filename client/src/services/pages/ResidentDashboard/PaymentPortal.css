@@ -1,0 +1,283 @@
+/* ===== PaymentPortal.css ===== */
+
+.payment-page-container {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Payment Card */
+.payment-card-glass {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.08);
+}
+
+/* Payment Header */
+.payment-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.payment-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.75rem;
+}
+
+.payment-header p {
+    font-size: 1rem;
+    color: #718096;
+}
+
+/* Payment Flex Layout */
+.payment-flex {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+/* QR Container */
+.qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* QR Box - Perfect Square with Rounded Corners */
+.qr-box {
+    width: 280px;
+    height: 280px;
+    border: 3px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.08);
+    transition: all 0.3s ease;
+}
+
+.qr-box:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
+    border-color: #667eea;
+}
+
+/* QR Image */
+.qr-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 16px;
+}
+
+/* QR Placeholder */
+.qr-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7fafc;
+    border-radius: 16px;
+    color: #718096;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* UPI Details */
+.upi-details {
+    text-align: center;
+}
+
+.upi-details p {
+    font-size: 0.95rem;
+    color: #667eea;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+/* Payment Form */
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+/* Payment Input Group */
+.payment-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.payment-input-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.payment-input-group input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+.payment-input-group input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+.payment-input-group input::placeholder {
+    color: #a0aec0;
+}
+
+/* Amount Input - Read Only Style */
+.amount-input {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #667eea !important;
+    cursor: not-allowed;
+}
+
+/* Pay Submit Button */
+.pay-submit-btn {
+    width: 100%;
+    padding: 1.1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    font-family: inherit;
+}
+
+.pay-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.pay-submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.pay-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+    .payment-card-glass {
+        padding: 2rem;
+    }
+
+    .payment-header h2 {
+        font-size: 1.75rem;
+    }
+
+    .payment-flex {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+
+    .qr-box {
+        width: 240px;
+        height: 240px;
+        padding: 1rem;
+    }
+
+    .qr-container {
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-card-glass {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .payment-header {
+        margin-bottom: 2rem;
+    }
+
+    .payment-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .payment-header p {
+        font-size: 0.9rem;
+    }
+
+    .payment-flex {
+        gap: 2rem;
+    }
+
+    .qr-box {
+        width: 200px;
+        height: 200px;
+        padding: 0.75rem;
+        border-radius: 20px;
+    }
+
+    .qr-image {
+        border-radius: 12px;
+    }
+
+    .upi-details p {
+        font-size: 0.85rem;
+        padding: 0.6rem 1.25rem;
+    }
+
+    .payment-input-group input {
+        padding: 0.9rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .amount-input {
+        font-size: 1.1rem !important;
+    }
+
+    .pay-submit-btn {
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+}

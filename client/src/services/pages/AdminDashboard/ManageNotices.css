@@ -1,0 +1,146 @@
+/* ===== ManageNotices.css - Fully Responsive Layout ===== */
+
+.admin-page-container {
+    animation: fadeIn 0.6s ease-out;
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr; /* Desktop: side-by-side */
+    gap: 2.5rem;
+    align-items: start;
+    padding-bottom: 2rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Glass Card Style */
+.form-container-glass {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.08);
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.form-header h2, .form-header h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.75rem;
+}
+
+.notice-form { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.input-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.input-group input, .input-group textarea {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+.input-group input:focus, .input-group textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1.1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Table Management */
+.notice-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-top: 1rem;
+}
+
+.custom-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* To prevent horizontal squeezing */
+}
+
+.custom-admin-table th {
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.custom-admin-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* ===== RESPONSIVE MEDIA QUERIES (FORCE STACKING) ===== */
+
+/* 💻 Tablets & Phones - Switch to Vertical Stack */
+@media (max-width: 1024px) {
+    .admin-page-container {
+        display: flex !important; /* Grid ko Flex mein change kiya */
+        flex-direction: column !important; /* Upar-niche stack karne ke liye */
+        gap: 2rem;
+    }
+
+    .form-container-glass {
+        width: 100% !important; /* Card poori width lega */
+        padding: 2rem;
+    }
+}
+
+/* 📱 Small Mobile Devices */
+@media (max-width: 768px) {
+    .admin-page-container {
+        padding-top: 4rem; /* Hamburger button ke liye space */
+    }
+
+    .form-container-glass {
+        padding: 1.5rem !important;
+        border-radius: 16px;
+    }
+
+    .form-header h2 { font-size: 1.4rem; }
+    
+    .notice-table-wrapper {
+        display: block !important; /* Table scroll fix */
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .input-group input, .input-group textarea {
+        font-size: 0.95rem;
+        padding: 0.8rem;
+    }
+}

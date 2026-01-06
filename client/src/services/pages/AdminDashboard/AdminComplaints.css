@@ -1,0 +1,223 @@
+/* Admin Complaints Page Styles */
+.admin-complaints-page {
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.table-container-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    max-width: 1400px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    /* ❌ Animation Hatayi hai taaki page move na ho */
+}
+
+/* ❌ SlideUp Keyframes ki zaroorat nahi hai agar move nahi karna */
+
+.table-container-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.table-container-glass:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+}
+
+/* 🚀 NEW SCROLL WRAPPER (For Mobile Scrolling) */
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto !important;
+    display: block;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 1rem;
+    border-radius: 12px;
+}
+
+/* Custom Scrollbar for Wrapper */
+.table-responsive-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+.table-responsive-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.table-responsive-wrapper::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+/* Table Header */
+.table-header {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.table-header::before {
+    content: '🛠️';
+    font-size: 2.5rem;
+    display: inline-block;
+    margin-right: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.table-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.table-header p {
+    color: #718096;
+    font-size: 0.95rem;
+    margin-left: 3.5rem;
+}
+
+/* Complaints Table */
+.complaints-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 12px;
+    min-width: 850px !important; /* Forces scroll on mobile */
+}
+
+.complaints-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.complaints-table thead tr th {
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.complaints-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    opacity: 1; /* ✅ Set to 1 taaki instant dikhe */
+    /* ❌ animation: fadeInUp hatayi hai */
+}
+
+.complaints-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    transform: scale(1.005);
+}
+
+.complaints-table tbody td {
+    padding: 1.25rem 1.5rem;
+    color: #2d3748;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+/* Status Badge & Buttons Styles Same Rehenge */
+.status-badge-small {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-badge-small.pending { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+.status-badge-small.resolved { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+
+/* Action Buttons - Animated Version */
+.resolve-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden; /* Shine effect ke liye zaruri */
+}
+
+/* Button Shine/Glow Effect */
+.resolve-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem; /* Thoda padding adjust kiya */
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem; /* Font thoda chota kiya taaki fit ho jaye */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+
+    /* 👇 YEH LINE SABSE ZARURI HAI */
+    white-space: nowrap !important; /* Isse dono words hamesha side-side rahenge */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: max-content; /* Box ko text ke hisaab se lamba karega */
+}
+
+/* Shine effect wahi rahega */
+.resolve-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.resolve-btn:hover::before {
+    left: 100%;
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+    .admin-complaints-page { padding: 4rem 1rem 1rem 1rem; }
+    .complaints-table thead tr th,
+    .complaints-table tbody td {
+        padding: 0.8rem 1rem;
+        white-space: nowrap !important;
+    }
+}

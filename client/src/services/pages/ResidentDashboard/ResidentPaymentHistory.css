@@ -1,0 +1,331 @@
+/* Resident Payment History Page Styles */
+.history-page-container {
+    padding: 2rem;
+    min-height: 100vh;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.history-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.6s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.history-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.history-card:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+}
+
+/* History Header */
+.history-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.history-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.history-header p {
+    color: #718096;
+    font-size: 0.95rem;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #718096;
+    font-size: 1.1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Table Wrapper - CRITICAL FOR MOBILE */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    /* Enable horizontal scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Custom History Table */
+.custom-history-table {
+    width: 100%;
+    min-width: 600px; /* Prevents squishing on mobile */
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.custom-history-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.custom-history-table thead tr th {
+    padding: 1.2rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.custom-history-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.custom-history-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.custom-history-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.custom-history-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.custom-history-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.custom-history-table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-history-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    transform: scale(1.01);
+}
+
+.custom-history-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.custom-history-table tbody td {
+    padding: 1.2rem 1.5rem;
+    color: #2d3748;
+    font-size: 0.95rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Amount Column */
+.amount-col {
+    font-weight: 700;
+    color: #10b981;
+    font-size: 1rem;
+}
+
+/* UTR Column */
+.utr-col {
+    font-family: 'Courier New', monospace;
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* Status Pills */
+.status-pill {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+    text-transform: capitalize;
+    transition: all 0.3s ease;
+}
+
+.status-pill.verified {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.status-pill.verified:hover {
+    background: #a7f3d0;
+    transform: scale(1.05);
+}
+
+.status-pill.pending {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fbbf24;
+}
+
+.status-pill.pending:hover {
+    background: #fde68a;
+    transform: scale(1.05);
+}
+
+/* No Data State */
+.no-data {
+    text-align: center;
+    padding: 3rem !important;
+    color: #718096;
+    font-style: italic;
+}
+
+/* Custom Scrollbar for Table */
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .history-page-container {
+        padding: 1rem;
+    }
+    
+    .history-card {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+    
+    .history-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .history-header p {
+        font-size: 0.85rem;
+    }
+    
+    /* Reduce table font sizes on mobile */
+    .custom-history-table thead tr th {
+        padding: 1rem;
+        font-size: 0.75rem;
+    }
+    
+    .custom-history-table tbody td {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .amount-col {
+        font-size: 0.9rem;
+    }
+    
+    .status-pill {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .history-page-container {
+        padding: 0.75rem;
+    }
+    
+    .history-card {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+    
+    .history-header h2 {
+        font-size: 1.25rem;
+    }
+    
+    .history-header p {
+        font-size: 0.8rem;
+    }
+    
+    .custom-history-table {
+        min-width: 550px; /* Slightly narrower but still readable */
+    }
+    
+    .custom-history-table thead tr th {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.7rem;
+    }
+    
+    .custom-history-table tbody td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .loading-spinner {
+        padding: 3rem 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* Focus Visible Enhancement */
+*:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
