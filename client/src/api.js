@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: 'https://society-ease-app.onrender.com' // Do NOT add /api/auth here
+    baseURL: 'https://society-ease-backend.onrender.com' // Do NOT add /api/auth here
 });
 
 // Check your api.js/axios config
