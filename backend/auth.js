@@ -3,7 +3,6 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-// ✅ 'app' ki jagah 'router' receive karein
 module.exports = function(router, db) {
 
     // 1. Register Route
@@ -80,8 +79,13 @@ module.exports = function(router, db) {
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true, 
+                auth: { 
+                    user: process.env.EMAIL_USER, 
+                    pass: process.env.EMAIL_PASS 
+                },
                 tls: { rejectUnauthorized: false }
             });
 
@@ -94,9 +98,10 @@ module.exports = function(router, db) {
 
             await transporter.sendMail(mailOptions);
             res.send("Reset link sent to your email!");
+
         } catch (err) {
-            console.error("FORGOT ERROR:", err);
-            res.status(500).send("Error generating reset link.");
+             console.error("❌ NODEMAILER DETAILED ERROR:", err); 
+             res.status(500).send(`Error generating reset link: ${err.message}`);
         }
     });
 
