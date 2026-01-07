@@ -12,7 +12,12 @@ const authRoutes = require('./auth');
 const app = express();
 
 // 1. Middleware
-app.use(cors());
+// server.js mein cors ko aise update karein
+app.use(cors({
+    origin: ["https://society-ease-app-k27x.onrender.com", "http://localhost:5173"], // Frontend URL aur Localhost dono allow karein
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
