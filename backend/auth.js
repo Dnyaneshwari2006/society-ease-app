@@ -78,15 +78,17 @@ module.exports = function(router, db) {
             const FRONTEND_URL = "https://society-ease-app.onrender.com"; 
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
-            const transporter = nodemailer.createTransport({
+            // auth.js mein transporter ko aise update karein
+    const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465, // Wapas 465 par shift
-    secure: true, // 465 ke saath true zaroori hai
+    port: 465, // 👈 Port 465 try karein
+    secure: true, // 👈 465 ke liye true hona zaroori hai
     auth: { 
         user: process.env.EMAIL_USER, 
         pass: process.env.EMAIL_PASS 
     },
-    connectionTimeout: 20000, // Timeout badha kar 20 seconds kar diya
+    // Timeout issues ke liye extra buffer
+    connectionTimeout: 15000, 
     tls: { 
         rejectUnauthorized: false 
     }
