@@ -3,10 +3,11 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-module.exports = function(app, db) {
+// ✅ 'app' ki jagah 'router' receive karein
+module.exports = function(router, db) {
 
-    // ✅ 1. Register Route (Yahan add karein)
-    app.post('/register', async (req, res) => {
+    // 1. Register Route
+    router.post('/register', async (req, res) => {
         const { name, email, password, flat_no, role } = req.body;
         try {
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -27,8 +28,8 @@ module.exports = function(app, db) {
         }
     });
 
-    // 2. Login Route (Aapka purana code)
-    app.post('/login', async (req, res) => {
+    // 2. Login Route
+    router.post('/login', async (req, res) => {
         const { email, password } = req.body;
         try {
             const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
@@ -61,7 +62,7 @@ module.exports = function(app, db) {
     });
 
     // 3. Forgot Password Route
-    app.post('/forgot-password', async (req, res) => {
+    router.post('/forgot-password', async (req, res) => {
         const { email } = req.body;
         try {
             const [users] = await db.query("SELECT id, name FROM users WHERE email = ?", [email]);
@@ -100,7 +101,7 @@ module.exports = function(app, db) {
     });
 
     // 4. Reset Password Route
-    app.post('/reset-password/:token', async (req, res) => {
+    router.post('/reset-password/:token', async (req, res) => {
         const { token } = req.params;
         const { newPassword } = req.body;
         try {
