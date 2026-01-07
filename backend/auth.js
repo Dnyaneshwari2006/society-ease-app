@@ -80,19 +80,15 @@ module.exports = function(router, db) {
 
             const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // STARTTLS ke liye false hi rahega
+    port: 465, // Wapas 465 par shift
+    secure: true, // 465 ke saath true zaroori hai
     auth: { 
         user: process.env.EMAIL_USER, 
         pass: process.env.EMAIL_PASS 
     },
-    // 👈 Ye extra settings add karein timeout fix karne ke liye
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    connectionTimeout: 20000, // Timeout badha kar 20 seconds kar diya
     tls: { 
-        rejectUnauthorized: false,
-        minVersion: 'TLSv1.2' // Gmail ke liye version specify karein
+        rejectUnauthorized: false 
     }
 });
 
