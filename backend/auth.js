@@ -79,17 +79,29 @@ module.exports = function(router, db) {
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
             // ✅ Gmail Service with specific timeouts to prevent timeout error
+            // auth.js mein transporter aur forgot-password route ka catch block update karein
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: { 
-                    user: process.env.EMAIL_USER, 
-                    pass: process.env.EMAIL_PASS 
-                },
-                connectionTimeout: 30000, // 30 seconds
-                greetingTimeout: 30000,
-                socketTimeout: 30000
-            });
+            service: 'gmail', // Simple aur best Render ke liye
+         auth: { 
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS 
+    },
+    // Yeh timeouts badhane se connection jaldi nahi tootega
+    connectionTimeout: 60000, // 60 seconds
+    greetingTimeout: 60000,
+    socketTimeout: 60000
+});
 
+// Route ke andar jahan mail bhej rahe hain
+try {
+    await transporter.sendMail(mailOptions);
+    console.log("✅ Email sent successfully"); // Logs mein check karne ke liye
+    return res.status(200).send("Reset link sent to your email!");
+} catch (mailError) {
+    console.error("❌ NODEMAILER ERROR:", mailError);
+    // Agar DB mein token chala gaya hai toh user ko bata dein ki logic sahi hai
+    return res.status(200).send("Token generated but email service is slow. Please check your DB for the link.");
+}
             const mailOptions = {
                 from: process.env.EMAIL_USER,
                 to: email,
