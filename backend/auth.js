@@ -79,15 +79,17 @@ module.exports = function(router, db) {
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
             const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true, 
-                auth: { 
-                    user: process.env.EMAIL_USER, 
-                    pass: process.env.EMAIL_PASS 
-                },
-                tls: { rejectUnauthorized: false }
-            });
+            host: 'smtp.gmail.com',
+            port: 587, // 👈 465 ki jagah 587 karein
+            secure: false, // 👈 587 ke liye false hona chahiye
+       auth: { 
+           user: process.env.EMAIL_USER, 
+           pass: process.env.EMAIL_PASS 
+      },
+       tls: { 
+        rejectUnauthorized: false // Security blocks bypass karne ke liye
+    }
+});
 
             const mailOptions = {
                 from: process.env.EMAIL_USER,
