@@ -80,6 +80,7 @@ module.exports = function(router, db) {
 
             // auth.js mein transporter ko aise update karein
     const transporter = nodemailer.createTransport({
+    pool: true,
     host: 'smtp.gmail.com',
     port: 465, // 👈 Port 465 try karein
     secure: true, // 👈 465 ke liye true hona zaroori hai
