@@ -1,37 +1,11 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // ✅ Ensure this is bcryptjs
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 module.exports = function(app, db) {
 
-    // 1. Register Route (FIXED TO MATCH FRONTEND)
-app.post('/register', async (req, res) => {
-    // We extract 'role' because that's what your frontend sends
-    const { name, email, password, flat_no, role } = req.body;
-    
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // Use the role sent by frontend, or default to resident
-        const finalRole = role || 'resident';
-
-        await db.query(
-            "INSERT INTO users (name, email, password, role, flat_no) VALUES (?, ?, ?, ?, ?)",
-            [name, email, hashedPassword, finalRole, flat_no]
-        );
-        
-        res.status(201).send(`User registered successfully as ${finalRole}!`);
-    } catch (err) {
-        console.error("Register Error:", err.message);
-        if (err && err.code === 'ER_DUP_ENTRY') {
-            return res.status(400).send('Email already exists');
-        }
-        res.status(500).send(err.message);
-    }
-});
-
-    // 2. Login Route (RESTORED)
+    // 1. Login Route (Safer and Logs errors)
     app.post('/login', async (req, res) => {
         const { email, password } = req.body;
         try {
@@ -41,14 +15,14 @@ app.post('/register', async (req, res) => {
             }
 
             const user = users[0];
-            // Comparing the provided password with the hashed password in DB
+            // Match password
             const isMatch = await bcrypt.compare(password, user.password);
 
             if (!isMatch) {
+                console.log(`❌ Password mismatch for: ${email}`);
                 return res.status(401).send("Invalid email or password.");
             }
 
-            // Generate JWT Token
             const token = jwt.sign(
                 { id: user.id, role: user.role },
                 process.env.JWT_SECRET || 'dev_secret',
@@ -66,7 +40,7 @@ app.post('/register', async (req, res) => {
         }
     });
 
-    // 3. Forgot Password Route
+    // 2. Forgot Password (Link Fixed for Render)
     app.post('/forgot-password', async (req, res) => {
         const { email } = req.body;
         try {
@@ -77,13 +51,14 @@ app.post('/register', async (req, res) => {
 
             const token = crypto.randomBytes(20).toString('hex');
 
-            // Using MySQL native time to avoid timezone confusion
             await db.query(
                 "UPDATE users SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?",
                 [token, email]
             );
 
-            const resetLink = `http://localhost:5173/reset-password/${token}`;
+            // ✅ BADLO: Localhost ko apne Render Frontend URL se replace karein
+            const FRONTEND_URL = "https://society-ease-app.onrender.com"; 
+            const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
             const transporter = nodemailer.createTransport({
                 service: 'gmail',
@@ -95,7 +70,7 @@ app.post('/register', async (req, res) => {
                 from: process.env.EMAIL_USER,
                 to: email,
                 subject: 'SocietyEase - Password Reset',
-                html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 1 hour.</p>`
+                html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Valid for 1 hour.</p>`
             };
 
             await transporter.sendMail(mailOptions);
