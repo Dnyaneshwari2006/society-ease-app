@@ -75,25 +75,20 @@ module.exports = function(router, db) {
                 [token, email]
             );
 
-            const FRONTEND_URL = "https://society-ease-app.onrender.com"; 
+            const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
-            // auth.js mein transporter ko aise update karein
-    const transporter = nodemailer.createTransport({
-    pool: true,
-    host: 'smtp.gmail.com',
-    port: 465, // 👈 Port 465 try karein
-    secure: true, // 👈 465 ke liye true hona zaroori hai
-    auth: { 
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS 
-    },
-    // Timeout issues ke liye extra buffer
-    connectionTimeout: 15000, 
-    tls: { 
-        rejectUnauthorized: false 
-    }
-});
+            // ✅ Gmail Service with specific timeouts to prevent timeout error
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: { 
+                    user: process.env.EMAIL_USER, 
+                    pass: process.env.EMAIL_PASS 
+                },
+                connectionTimeout: 30000, // 30 seconds
+                greetingTimeout: 30000,
+                socketTimeout: 30000
+            });
 
             const mailOptions = {
                 from: process.env.EMAIL_USER,
@@ -106,8 +101,8 @@ module.exports = function(router, db) {
             res.send("Reset link sent to your email!");
 
         } catch (err) {
-             console.error("❌ NODEMAILER DETAILED ERROR:", err); 
-             res.status(500).send(`Error generating reset link: ${err.message}`);
+             console.error("❌ NODEMAILER ERROR:", err); 
+             res.status(500).send(`Error sending email: ${err.message}`);
         }
     });
 
