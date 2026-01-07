@@ -1,11 +1,33 @@
-const bcrypt = require('bcryptjs'); // ✅ Ensure this is bcryptjs
+const bcrypt = require('bcryptjs'); 
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 module.exports = function(app, db) {
 
-    // 1. Login Route (Safer and Logs errors)
+    // ✅ 1. Register Route (Yahan add karein)
+    app.post('/register', async (req, res) => {
+        const { name, email, password, flat_no, role } = req.body;
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const finalRole = role || 'resident';
+
+            await db.query(
+                "INSERT INTO users (name, email, password, role, flat_no) VALUES (?, ?, ?, ?, ?)",
+                [name, email, hashedPassword, finalRole, flat_no]
+            );
+            
+            res.status(201).send(`User registered successfully as ${finalRole}!`);
+        } catch (err) {
+            console.error("Register Error:", err.message);
+            if (err && err.code === 'ER_DUP_ENTRY') {
+                return res.status(400).send('Email already exists');
+            }
+            res.status(500).send(err.message);
+        }
+    });
+
+    // 2. Login Route (Aapka purana code)
     app.post('/login', async (req, res) => {
         const { email, password } = req.body;
         try {
@@ -15,11 +37,9 @@ module.exports = function(app, db) {
             }
 
             const user = users[0];
-            // Match password
             const isMatch = await bcrypt.compare(password, user.password);
 
             if (!isMatch) {
-                console.log(`❌ Password mismatch for: ${email}`);
                 return res.status(401).send("Invalid email or password.");
             }
 
@@ -40,7 +60,7 @@ module.exports = function(app, db) {
         }
     });
 
-    // 2. Forgot Password (Link Fixed for Render)
+    // 3. Forgot Password Route
     app.post('/forgot-password', async (req, res) => {
         const { email } = req.body;
         try {
@@ -50,13 +70,11 @@ module.exports = function(app, db) {
             }
 
             const token = crypto.randomBytes(20).toString('hex');
-
             await db.query(
                 "UPDATE users SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?",
                 [token, email]
             );
 
-            // ✅ BADLO: Localhost ko apne Render Frontend URL se replace karein
             const FRONTEND_URL = "https://society-ease-app.onrender.com"; 
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
@@ -85,28 +103,22 @@ module.exports = function(app, db) {
     app.post('/reset-password/:token', async (req, res) => {
         const { token } = req.params;
         const { newPassword } = req.body;
-
         try {
-            // Check if token exists and if it is still valid using DB time
             const [users] = await db.query(
                 "SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()",
                 [token]
             );
 
             if (users.length === 0) {
-                return res.status(400).send("Invalid or expired reset token. Please request a new link.");
+                return res.status(400).send("Invalid or expired reset token.");
             }
 
-            // Hash the NEW password before saving
             const hashedPassword = await bcrypt.hash(newPassword, 10);
-            
             await db.query(
                 "UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?",
                 [hashedPassword, users[0].id]
             );
-
             res.send("Password updated successfully!");
-
         } catch (err) {
             console.error(err);
             res.status(500).send("Error updating password.");

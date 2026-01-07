@@ -14,18 +14,20 @@ function Register() {
     const [secretKey, setSecretKey] = useState(''); // New state for admin check
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Logic: Determine role based on secret key
-        const finalRole = secretKey === "SOCIETY2026" ? "admin" : "resident";
-        
-        const dataToSubmit = { ...formData, role: finalRole };
+    e.preventDefault();
+    
+    const finalRole = secretKey === "SOCIETY2026" ? "admin" : "resident";
+    const dataToSubmit = { ...formData, role: finalRole };
 
-        try {
-            const response = await API.post('/api/auth/register', dataToSubmit);
-            alert(`Registered successfully as ${finalRole}!`);
-            navigate('/login'); 
-        } catch (err) {
+    try {
+        // ✅ FIX: URL ko backend ke router setup se match karein
+        // Pehle ye '/api/auth/register' tha, ise badal kar '/register' karein
+        // Kyunki 'API' base URL mein pehle se hi '/api/auth' judaa ho sakta hai
+        const response = await API.post('/register', dataToSubmit); 
+        
+        alert(`Registered successfully as ${finalRole}!`);
+        navigate('/login'); 
+    } catch (err) {
             const msg = err?.response?.data || 'Register failed';
             alert(msg);
         }
