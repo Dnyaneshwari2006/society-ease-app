@@ -312,6 +312,25 @@ app.get('/api/admin/residents', async (req, res) => {
 });
 
 
+// --- RESIDENT: FETCH PERSONAL PAYMENT HISTORY ---
+app.get('/api/resident/payment-history/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Hum 'resident_id' ke base par filter kar rahe hain taki sirf us resident ka data aaye
+        const [rows] = await db.query(
+            "SELECT * FROM payments WHERE resident_id = ? ORDER BY payment_date DESC", 
+            [id]
+        );
+        
+        // Agar koi record nahi milta toh khali array bhejein
+        res.json(rows); 
+    } catch (err) {
+        console.error("❌ History Fetch Error:", err.message);
+        res.status(500).json({ error: "Failed to fetch payment history" });
+    }
+});
+
+
 // --- EXPENSE MANAGEMENT ---   //Expenses save karnyasathi//
 // 1. Add a new expense (Matches your table columns)
 app.post('/api/admin/expenses', async (req, res) => {
