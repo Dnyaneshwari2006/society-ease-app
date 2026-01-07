@@ -16,22 +16,27 @@ function Register() {
     const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Role logic
     const finalRole = secretKey === "SOCIETY2026" ? "admin" : "resident";
     const dataToSubmit = { ...formData, role: finalRole };
 
     try {
-        // ✅ FIX: URL ko backend ke router setup se match karein
-        // Pehle ye '/api/auth/register' tha, ise badal kar '/register' karein
-        // Kyunki 'API' base URL mein pehle se hi '/api/auth' judaa ho sakta hai
-        const response = await API.post('/register', dataToSubmit); 
+        // ✅ CORRECT PATH: 
+        // 1. Aapka baseURL sirf domain hai (image_cfc302.png)
+        // 2. Server.js mein prefix '/api/auth' hai
+        // 3. Auth.js mein route '/register' hai
+        // Isliye total rasta banta hai: /api/auth/register
+        const response = await API.post('/api/auth/register', dataToSubmit); 
         
         alert(`Registered successfully as ${finalRole}!`);
         navigate('/login'); 
     } catch (err) {
-            const msg = err?.response?.data || 'Register failed';
-            alert(msg);
-        }
-    };
+        // Backend se aane wala error message dikhayega (e.g., "Email already exists")
+        const msg = err?.response?.data || 'Register failed';
+        alert(msg);
+        console.error("Registration Error:", err);
+    }
+};
 
     return (
         <div className="register-container">

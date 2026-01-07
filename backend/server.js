@@ -17,7 +17,6 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // --- CLOUDINARY CONFIGURATION ---
-// Inki values Render ke Environment Variables se aayengi
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -33,10 +32,9 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage });
 
-// Static folder (purani files ke liye)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// 2. Initialize Auth Routes
+// 2. ✅ Initialize Auth Routes (Correct Prefix)
 const expressRouter = express.Router(); 
 authRoutes(expressRouter, db); 
 app.use('/api/auth', expressRouter);
