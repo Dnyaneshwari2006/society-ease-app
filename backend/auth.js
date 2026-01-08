@@ -78,30 +78,29 @@ module.exports = function(router, db) {
         const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
         const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
-        // Mailtrap Configuration
+        // 1. Gmail Configuration (Wapas users ke liye)
         const transporter = nodemailer.createTransport({
-            host: "sandbox.smtp.mailtrap.io",
-            port: 2525,
+            service: 'gmail',
             auth: {
-                user: "8600917e30da5c", // Mailtrap Username
-                pass: "94162853d8bbcc"  // Mailtrap Password
+                user: process.env.EMAIL_USER, 
+                pass: process.env.EMAIL_PASS 
             }
         });
 
         const mailOptions = {
-            from: 'no-reply@societyease.com', // Aapka verify kiya hua sender
-            to: email,
+            from: process.env.EMAIL_USER,
+            to: email, // Resident ka email
             subject: 'SocietyEase - Password Reset',
             html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Valid for 1 hour.</p>`
         };
 
-        // 🚀 Pehle Response bhej do taaki Frontend timeout na kare
-        res.status(200).send("Reset link processed! Check your Mailtrap inbox.");
+        // 2. User ko turant success message dikhao
+        res.status(200).send("Reset link processed! Please check your email inbox (and spam folder) in a moment.");
 
-        // Email background mein bhejte raho
+        // 3. Email background mein bhejte raho (Isse timeout screen par nahi aayega)
         transporter.sendMail(mailOptions)
-            .then(() => console.log("✅ Email sent to Mailtrap successfully"))
-            .catch(mailError => console.error("❌ NODEMAILER ERROR:", mailError));
+            .then(() => console.log("✅ Real Email sent to resident successfully"))
+            .catch(mailError => console.error("❌ NODEMAILER REAL MAIL ERROR:", mailError));
 
     } catch (err) {
         console.error("❌ SYSTEM ERROR:", err); 
