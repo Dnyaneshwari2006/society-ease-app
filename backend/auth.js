@@ -78,18 +78,12 @@ module.exports = function(router, db) {
             const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
-            // ✅ Gmail Service with specific timeouts to prevent timeout error
-            // auth.js mein transporter aur forgot-password route ka catch block update karein
             const transporter = nodemailer.createTransport({
-            service: 'gmail', // Simple aur best Render ke liye
-         auth: { 
+    service: 'gmail', // 👈 Sirf service 'gmail' likhne se port/host ki tension khatam
+    auth: { 
         user: process.env.EMAIL_USER, 
         pass: process.env.EMAIL_PASS 
-    },
-    // Yeh timeouts badhane se connection jaldi nahi tootega
-    connectionTimeout: 60000, // 60 seconds
-    greetingTimeout: 60000,
-    socketTimeout: 60000
+    }
 });
 
 // Route ke andar jahan mail bhej rahe hain
