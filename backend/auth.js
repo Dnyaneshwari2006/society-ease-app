@@ -62,56 +62,54 @@ module.exports = function(router, db) {
 
     // 3. Forgot Password Route
     router.post('/forgot-password', async (req, res) => {
-        const { email } = req.body;
-        try {
-            const [users] = await db.query("SELECT id, name FROM users WHERE email = ?", [email]);
-            if (users.length === 0) {
-                return res.status(404).send("Email not found.");
-            }
+    const { email } = req.body;
+    try {
+        const [users] = await db.query("SELECT id, name FROM users WHERE email = ?", [email]);
+        if (users.length === 0) {
+            return res.status(404).send("Email not found.");
+        }
 
-            const token = crypto.randomBytes(20).toString('hex');
-            await db.query(
-                "UPDATE users SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?",
-                [token, email]
-            );
+        const token = crypto.randomBytes(20).toString('hex');
+        await db.query(
+            "UPDATE users SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?",
+            [token, email]
+        );
 
-            const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
-            const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
+        const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
+        const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
-            const transporter = nodemailer.createTransport({
+        // Mailtrap Configuration
+        const transporter = nodemailer.createTransport({
             host: "sandbox.smtp.mailtrap.io",
             port: 2525,
             auth: {
-        user: "8600917e30da5c", // Mailtrap se copy karein
-        pass: "94162853d8bbcc"  // Mailtrap se copy karein
-      }
-    });
+                user: "8600917e30da5c", // Mailtrap Username
+                pass: "94162853d8bbcc"  // Mailtrap Password
+            }
+        });
 
-// Route ke andar jahan mail bhej rahe hain
-try {
-    await transporter.sendMail(mailOptions);
-    console.log("✅ Email sent successfully"); // Logs mein check karne ke liye
-    return res.status(200).send("Reset link sent to your email!");
-} catch (mailError) {
-    console.error("❌ NODEMAILER ERROR:", mailError);
-    // Agar DB mein token chala gaya hai toh user ko bata dein ki logic sahi hai
-    return res.status(200).send("Token generated but email service is slow. Please check your DB for the link.");
-}
-            const mailOptions = {
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: 'SocietyEase - Password Reset',
-                html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Valid for 1 hour.</p>`
-            };
+        const mailOptions = {
+            from: 'no-reply@societyease.com', // Aapka verify kiya hua sender
+            to: email,
+            subject: 'SocietyEase - Password Reset',
+            html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Valid for 1 hour.</p>`
+        };
 
-            await transporter.sendMail(mailOptions);
-            res.send("Reset link sent to your email!");
+        // 🚀 Pehle Response bhej do taaki Frontend timeout na kare
+        res.status(200).send("Reset link processed! Check your Mailtrap inbox.");
 
-        } catch (err) {
-             console.error("❌ NODEMAILER ERROR:", err); 
-             res.status(500).send(`Error sending email: ${err.message}`);
+        // Email background mein bhejte raho
+        transporter.sendMail(mailOptions)
+            .then(() => console.log("✅ Email sent to Mailtrap successfully"))
+            .catch(mailError => console.error("❌ NODEMAILER ERROR:", mailError));
+
+    } catch (err) {
+        console.error("❌ SYSTEM ERROR:", err); 
+        if (!res.headersSent) {
+            res.status(500).send(`Error: ${err.message}`);
         }
-    });
+    }
+});
 
     // 4. Reset Password Route
     router.post('/reset-password/:token', async (req, res) => {
