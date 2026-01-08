@@ -2,8 +2,8 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { Resend } = require('resend');
-const resend = new Resend('re_YEfyLnw9_Ha9Rwo6CwXdbVCqNkQai3KLL'); // Yahan apni key paste karo; // Yahan apni key paste karo
+const { Resend } = require('resend'); git add .
+const resend = new Resend(process.env.RESEND_API_KEY); // Direct key mat likho!// Yahan apni key paste karo; // Yahan apni key paste karo
 
 module.exports = function(router, db) {
 
