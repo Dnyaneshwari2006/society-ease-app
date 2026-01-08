@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { Resend } = require('resend');
+const resend = new Resend('re_YEfyLnw9_Ha9Rwo6CwXdbVCqNkQai3KLL'); // Yahan apni key paste karo; // Yahan apni key paste karo
 
 module.exports = function(router, db) {
 
@@ -65,9 +67,7 @@ module.exports = function(router, db) {
     const { email } = req.body;
     try {
         const [users] = await db.query("SELECT id, name FROM users WHERE email = ?", [email]);
-        if (users.length === 0) {
-            return res.status(404).send("Email not found.");
-        }
+        if (users.length === 0) return res.status(404).send("Email not found.");
 
         const token = crypto.randomBytes(20).toString('hex');
         await db.query(
@@ -78,35 +78,19 @@ module.exports = function(router, db) {
         const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
         const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
-        // 1. Gmail Configuration (Wapas users ke liye)
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER, 
-                pass: process.env.EMAIL_PASS 
-            }
+        // Resend API se Real Email bhej rahe hain
+        await resend.emails.send({
+            from: 'onboarding@resend.dev', 
+            to: email, // Aapka real gmail id
+            subject: 'SocietyEase - Reset Password',
+            html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`
         });
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email, // Resident ka email
-            subject: 'SocietyEase - Password Reset',
-            html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Valid for 1 hour.</p>`
-        };
-
-        // 2. User ko turant success message dikhao
-        res.status(200).send("Reset link processed! Please check your email inbox (and spam folder) in a moment.");
-
-        // 3. Email background mein bhejte raho (Isse timeout screen par nahi aayega)
-        transporter.sendMail(mailOptions)
-            .then(() => console.log("✅ Real Email sent to resident successfully"))
-            .catch(mailError => console.error("❌ NODEMAILER REAL MAIL ERROR:", mailError));
+        res.status(200).send("Reset link sent to your real Gmail!");
 
     } catch (err) {
-        console.error("❌ SYSTEM ERROR:", err); 
-        if (!res.headersSent) {
-            res.status(500).send(`Error: ${err.message}`);
-        }
+        console.error("❌ ERROR:", err);
+        res.status(500).send("System Error.");
     }
 });
 
