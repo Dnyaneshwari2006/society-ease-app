@@ -79,12 +79,13 @@ module.exports = function(router, db) {
             const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
             const transporter = nodemailer.createTransport({
-    service: 'gmail', // 👈 Sirf service 'gmail' likhne se port/host ki tension khatam
-    auth: { 
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS 
-    }
-});
+            host: "sandbox.smtp.mailtrap.io",
+            port: 2525,
+            auth: {
+        user: "8600917e30da5c", // Mailtrap se copy karein
+        pass: "94162853d8bbcc"  // Mailtrap se copy karein
+      }
+    });
 
 // Route ke andar jahan mail bhej rahe hain
 try {
