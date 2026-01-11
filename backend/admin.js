@@ -1,57 +1,109 @@
+// --- ADMIN PAYMENT MANAGEMENT ---
+
 const express = require('express');
 const router = express.Router();
-const db = require('./config/db'); 
+const db = require('./config/db'); // ✅ Correct path
 
-// 1. GET: Fetch all payments for Tracker
+// A. Get all payments for Admin Tracker
 router.get('/payments', async (req, res) => {
     try {
-        const [rows] = await db.query(`
-            SELECT mp.*, u.username AS user_name 
-            FROM maintenance_payments mp
-            JOIN users u ON mp.user_id = u.id
-            WHERE mp.status != 'Paid' 
-            ORDER BY mp.payment_date DESC
-        `);
+        const query = `
+            SELECT p.*, u.username AS user_name, u.flat_no 
+            FROM payments p
+            JOIN users u ON p.resident_id = u.id
+            ORDER BY p.payment_date DESC
+        `;
+        const [rows] = await db.query(query);
         res.status(200).json(rows);
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch payments" });
+        console.error("Fetch Error:", err);
+        res.status(500).json({ error: "Failed to load payments" });
     }
 });
 
-// 2. PUT: Verify specific month payment
+// B. Verify specific payment 
 router.put('/verify-payment/:id', async (req, res) => {
     const { id } = req.params;
-    try {
-        // Sirf wahi ID update hogi jise click kiya gaya (Manual Control)
-        const [result] = await db.query(
-            "UPDATE maintenance_payments SET status = 'Verified' WHERE id = ?",
-            [id]
-        );
+    const { status } = req.body; 
 
-        if (result.affectedRows === 0) return res.status(404).send("Record not found");
-        
-        res.status(200).json({ message: "Payment verified successfully!" });
+    try {
+        // Manual verification: Only update the specific row clicked by admin
+        const query = "UPDATE payments SET status = ? WHERE id = ?";
+        const [result] = await db.query(query, [status, id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Payment not found" });
+        }
+        res.status(200).json({ message: "Payment Verified Successfully!", status });
     } catch (err) {
-        res.status(500).json({ error: "Verification failed" });
+        console.error("Verify Error:", err);
+        res.status(500).json({ error: "Database error during verification" });
     }
 });
 
-// 3. POST: Generate monthly bills for all residents
-router.post('/generate-monthly-bills', async (req, res) => {
-    const { month, year, amount } = req.body;
+module.exports = router; // ✅ Zaruri export
+
+// C. Generate Monthly Maintenance Bills for all Residents
+router.post('/generate-bills', async (req, res) => {
+    const { amount, month_name, year } = req.body; // e.g., { amount: 1000, month_name: 'Feb', year: 2026 }
+
     try {
-        const [users] = await db.query("SELECT id, flat_no FROM users WHERE role = 'resident'");
-        const queries = users.map(user => 
-            db.query(
-                "INSERT INTO maintenance_payments (user_id, flat_no, month_name, year, amount, status) VALUES (?, ?, ?, ?, ?, 'Pending')",
-                [user.id, user.flat_no, month, year, amount]
-            )
-        );
-        await Promise.all(queries);
-        res.status(200).send("Monthly bills generated!");
+        // 1. Saare residents ki list nikaalo
+        const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
+
+        if (residents.length === 0) {
+            return res.status(404).json({ message: "No residents found to bill." });
+        }
+
+        // 2. Har resident ke liye ek 'Pending' record insert karo
+        const insertQueries = residents.map(r => {
+            return db.query(
+                "INSERT INTO payments (resident_id, amount, status, month_name, year) VALUES (?, ?, 'Pending', ?, ?)",
+                [r.id, amount, month_name, year]
+            );
+        });
+
+        await Promise.all(insertQueries);
+
+        res.status(200).json({ message: `Bills for ${month_name} ${year} generated for all residents!` });
     } catch (err) {
-        res.status(500).send("Error generating bills");
+        console.error("Billing Error:", err);
+        res.status(500).json({ error: "Could not generate bills." });
     }
 });
 
-module.exports = router;
+// D. Get Resident Stats (Pending Dues)
+router.get('/resident-stats/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        // 1. Pending Dues Sum
+        const [dues] = await db.query(
+            "SELECT SUM(amount) AS total FROM payments WHERE resident_id = ? AND status = 'Pending'", 
+            [userId]
+        );
+
+        // 2. Open Complaints
+        const [complaints] = await db.query(
+            "SELECT COUNT(*) AS total FROM complaints WHERE user_id = ? AND status != 'Resolved'", 
+            [userId]
+        );
+
+        // 3. Notices Count
+        const [notices] = await db.query("SELECT COUNT(*) AS total FROM notices");
+
+        // 4. User Details (Flat No)
+        const [user] = await db.query("SELECT flat_no FROM users WHERE id = ?", [userId]);
+
+        // ✅ FIXED: Added missing ) and ;
+        res.json({
+            flat_no: user[0]?.flat_no || "N/A",
+            pendingDues: dues[0]?.total || 0,
+            openComplaints: complaints[0]?.total || 0,
+            totalNotices: notices[0]?.total || 0
+        });
+
+    } catch (err) { // ✅ FIXED: Added missing } before catch
+        console.error("❌ Stats Error:", err);
+        res.status(500).json({ error: "Failed to fetch stats" });
+    }
+});

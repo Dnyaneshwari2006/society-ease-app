@@ -20,8 +20,8 @@ function ResidentDashboard() {
         const fetchResidentStats = async () => {
             try {
                 if (user?.id) {
-                    const res = await API.get(`/api/resident/dashboard-stats/${user.id}`);
-                    setDbStats(res.data);
+                const res = await API.get(`/api/resident/dashboard-stats/${user.id}`);        
+                setDbStats(res.data);
                 }
             } catch (err) {
                 console.error("Error fetching resident stats:", err);
