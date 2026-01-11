@@ -83,7 +83,7 @@ function ResidentLogs() {
                                         onClick={() => confirmDelete(res)}
                                         title="Remove Resident"
                                     >
-                                        🗑️
+                                        Delete
                                     </button>
                                 </td>
                             </tr>

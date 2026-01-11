@@ -8,6 +8,7 @@ require('dotenv').config();
 
 const db = require('./config/db'); 
 const authRoutes = require('./auth'); 
+const adminRoutes = require('./admin');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const expressRouter = express.Router(); 
 authRoutes(expressRouter, db); 
 app.use('/api/auth', expressRouter);
+app.use('/api/admin', adminRoutes);
 
 // --- SOCIETY SETTINGS ROUTES ---
 app.get('/api/society/settings', async (req, res) => {

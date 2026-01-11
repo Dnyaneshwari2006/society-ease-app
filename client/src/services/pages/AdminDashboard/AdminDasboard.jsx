@@ -13,7 +13,7 @@ function AdminDashboard() {
         monthlyRevenue: 0 
     });
 
-    // 🚀 NAYI STATE: Notifications ke liye
+    // Notifications ke liye
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
@@ -76,7 +76,7 @@ function AdminDashboard() {
                 </div>
             </div>
 
-          {/* 🚀 Updated Notification Section */}
+          {/*  Updated Notification Section */}
             <section className="notifications-section">
             <h2>🔔 Recent Alerts & Requests</h2>
              <div className="notification-list">

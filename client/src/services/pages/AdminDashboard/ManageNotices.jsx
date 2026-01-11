@@ -116,7 +116,7 @@ function ManageNotices() {
                                     </td>
                                     <td>
                                         <button onClick={() => handleDelete(n.id)} className="delete-icon-btn">
-                                            🗑️
+                                            Delete
                                         </button>
                                     </td>
                                 </tr>

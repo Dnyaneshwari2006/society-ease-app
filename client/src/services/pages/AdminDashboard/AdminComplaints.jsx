@@ -78,7 +78,7 @@ function AdminComplaints() {
                                                         Mark Resolved
                                                     </button>
                                                 ) : (
-                                                    <span className="resolved-check">✅ Completed</span>
+                                                    <span className="resolved-check">✅Completed</span>
                                                 )}
                                             </td>
                                         </tr>

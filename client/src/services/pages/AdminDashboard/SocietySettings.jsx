@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import API from '../../../api';
 import './SocietySettings.css';
 
-// 🚀 Render Backend ka URL yahan dalein
 const BACKEND_URL = "https://society-ease-backend.onrender.com"; 
 
 function SocietySettings() {
@@ -84,7 +83,7 @@ function SocietySettings() {
         <div className="settings-container-medium">
             <div className="settings-card-medium">
                 <div className="settings-header">
-                    <h2>⚙️ Society Configuration</h2>
+                    <h2>Society Configuration</h2>
                 </div>
 
                 <form onSubmit={handleTextUpdate} className="text-settings-form">
@@ -117,7 +116,7 @@ function SocietySettings() {
                 <hr className="divider" />
 
                 <div className="admin-management-section">
-                    <h3>👥 Admin Accounts</h3>
+                    <h3>👥Admin Accounts</h3>
                     <div className="admin-list">
                         {admins.map(admin => (
                             <div key={admin.id} className="admin-item-row">

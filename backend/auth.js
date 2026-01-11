@@ -89,7 +89,7 @@ module.exports = function(router, db) {
         res.status(200).send("Reset link sent to your real Gmail!");
 
     } catch (err) {
-        console.error("❌ ERROR:", err);
+        console.error(" ERROR:", err);
         res.status(500).send("System Error.");
     }
 });

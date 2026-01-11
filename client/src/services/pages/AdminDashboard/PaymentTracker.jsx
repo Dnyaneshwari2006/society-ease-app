@@ -28,7 +28,7 @@ function PaymentTracker() {
         });
 
         if (response.status === 200) {
-            alert("✅ Payment Approved!");
+            alert("✅Payment Approved!");
 
             // 1. Update the local state so the 'Pending' badge changes to 'Verified'
             setPayments(prevPayments => 
@@ -47,7 +47,7 @@ function PaymentTracker() {
     <div className="payment-tracker-page">
         <div className="table-container-glass">
             <div className="table-header-info">
-                <h2>💰 Resident Payment Verifications</h2>
+                <h2>Resident Payment Verifications</h2>
                 <p>Cross-check the UTR numbers with your bank statement before approving.</p>
             </div>
 
@@ -58,10 +58,10 @@ function PaymentTracker() {
                     <table className="payment-table">
                         <thead>
                             <tr>
-                                <th>Resident</th>
+                                <th>Resident Name</th>
                                 <th>Flat</th>
                                 <th>Amount</th>
-                                <th>Transaction ID (UTR)</th>
+                                <th>Transaction ID</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -88,7 +88,7 @@ function PaymentTracker() {
                                                     Approve
                                                 </button>
                                             ) : (
-                                                <span className="verified-text">✅ Verified</span>
+                                                <span className="verified-text">✅Verified</span>
                                             )}
                                         </td>
                                     </tr>

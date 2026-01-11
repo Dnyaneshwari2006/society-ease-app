@@ -349,6 +349,30 @@
     .compact-dropzone {
         height: 220px;
     }
+
+    /* Admin section mobile adjustments */
+    .admin-item-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .admin-item-row .admin-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .admin-item-row .admin-info strong {
+        min-width: auto;
+    }
+
+    .admin-item-row .remove-admin-btn {
+        width: 100%;
+        padding: 0.75rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -399,6 +423,34 @@
     }
 
     .placeholder p {
+        font-size: 0.8rem;
+    }
+
+    /* Admin management mobile */
+    .admin-management-section {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .admin-management-section h3 {
+        font-size: 1.1rem;
+    }
+
+    .admin-item-row {
+        padding: 0.85rem;
+    }
+
+    .admin-item-row .admin-info strong {
+        font-size: 0.9rem;
+    }
+
+    .admin-item-row .admin-info span {
+        font-size: 0.8rem;
+        word-break: break-word;
+    }
+
+    .admin-item-row .remove-admin-btn {
+        padding: 0.7rem;
         font-size: 0.8rem;
     }
 }

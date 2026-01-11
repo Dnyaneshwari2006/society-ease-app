@@ -41,7 +41,7 @@ const handleSubmit = async (e) => {
         <div className="resident-page-container">
             <div className="form-container-glass">
                 <div className="form-header">
-                    <h2>🛠️ Report an Issue</h2>
+                    <h2>Report an Issue</h2>
                     <p>Describe the problem, and our maintenance team will look into it.</p>
                 </div>
 
