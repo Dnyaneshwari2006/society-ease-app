@@ -14,7 +14,7 @@ function ExpenseManager() {
     // ✅ FIX 1: Define 'today' to prevent ReferenceError
     // Isse calendar mein future dates block ho jayengi
     const today = new Date().toISOString().split('T')[0];
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         
