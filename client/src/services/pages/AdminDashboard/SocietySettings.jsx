@@ -10,6 +10,7 @@ function SocietySettings() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [billLoading, setBillLoading] = useState(false); // Bill generation ke liye alag loading
 
     useEffect(() => {
         fetchSettings();
@@ -28,6 +29,30 @@ function SocietySettings() {
             const res = await API.get('/api/admin/list-admins'); 
             setAdmins(res.data);
         } catch (err) { console.error(err); }
+    };
+
+    // --- NEW: GENERATE BILLS LOGIC ---
+    const handleGenerateMonthlyBills = async () => {
+        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+        const currentYear = new Date().getFullYear();
+
+        const confirmGen = window.confirm(`Generate ₹${settings.maintenance_amount} bills for ALL residents for ${currentMonth} ${currentYear}?`);
+        
+        if (!confirmGen) return;
+
+        setBillLoading(true);
+        try {
+            const res = await API.post('/api/admin/generate-bills', {
+                amount: settings.maintenance_amount,
+                month: currentMonth,
+                year: currentYear
+            });
+            alert("✅ Success: " + res.data.message);
+        } catch (err) {
+            alert("❌ Error: " + (err.response?.data?.error || "Failed to generate bills"));
+        } finally {
+            setBillLoading(false);
+        }
     };
 
     const handleDeleteAdmin = async (id, name) => {
@@ -73,7 +98,6 @@ function SocietySettings() {
         finally { setLoading(false); }
     };
 
-    // Helper: Use Cloudinary URL or Local path
     const getQrUrl = (img) => {
         if (!img) return null;
         return img.startsWith('http') ? img : `${BACKEND_URL}/uploads/qr_codes/${img}`;
@@ -91,7 +115,27 @@ function SocietySettings() {
                         <input type="text" value={settings.society_name || ''} onChange={(e) => setSettings({...settings, society_name: e.target.value})} placeholder="Society Name" />
                         <input type="number" value={settings.maintenance_amount || ''} onChange={(e) => setSettings({...settings, maintenance_amount: e.target.value})} placeholder="Maintenance Fee" />
                     </div>
-                    <button type="submit" className="save-btn">Save Text Details</button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button type="submit" className="save-btn" style={{ flex: 1 }}>Save Text Details</button>
+                        
+                        {/* --- NEW: GENERATE BILLS BUTTON --- */}
+                        <button 
+                            type="button" 
+                            onClick={handleGenerateMonthlyBills} 
+                            className="generate-btn"
+                            disabled={billLoading}
+                            style={{ 
+                                flex: 1, 
+                                backgroundColor: '#28a745', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                cursor: billLoading ? 'not-allowed' : 'pointer' 
+                            }}
+                        >
+                            {billLoading ? "Generating..." : "📢 Generate Monthly Bills"}
+                        </button>
+                    </div>
                 </form>
 
                 <hr className="divider" />
