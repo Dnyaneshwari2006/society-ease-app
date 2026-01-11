@@ -258,44 +258,41 @@ app.post('/api/resident/pay', async (req, res) => {
 
 
 // --- ADMIN PAYMENT MANAGEMENT ---
-// Your frontend 'fetchPayments' calls this URL
+// 1. GET: Fetch Payments
 app.get('/api/admin/payments', async (req, res) => {
     try {
         const query = `
-            SELECT payments.*, users.name, users.flat_no 
-            FROM payments 
-            JOIN users ON payments.resident_id = users.id
-            ORDER BY payments.payment_date DESC
+            SELECT 
+                mp.*, 
+                u.username AS user_name, 
+                u.flat_no 
+            FROM maintenance_payments mp
+            JOIN users u ON mp.user_id = u.id
+            ORDER BY mp.payment_date DESC
         `;
         const [rows] = await db.query(query);
-        res.json(rows); // Sends the records you see in MySQL Workbench
+        res.json(rows); 
     } catch (err) {
-        console.error("Fetch Error:", err);
+        console.error("❌ Fetch Error:", err);
         res.status(500).json({ error: "Failed to load payments" });
     }
 });
 
-// 2. THIS ROUTE VERIFIES THE DATA (PUT)
-// Your frontend 'handleApprove' calls this URL
+// 2. PUT: Verify Payment
 app.put('/api/admin/verify-payment/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body; 
 
     try {
-        // Log to see if the request is reaching the server
-        console.log(`Updating payment ${id} to status: ${status}`);
-
-        const query = "UPDATE payments SET status = ? WHERE id = ?";
+        const query = "UPDATE maintenance_payments SET status = ? WHERE id = ?";
         const [result] = await db.query(query, [status, id]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "Payment record not found" });
+            return res.status(404).json({ message: "Record not found" });
         }
-
-        // Send a clear success response
         res.status(200).json({ message: "Success", status: status });
     } catch (err) {
-        console.error("DB Error:", err);
+        console.error("❌ DB Error:", err);
         res.status(500).json({ error: "Database error" });
     }
 });
