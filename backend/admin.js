@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Aapka database connection
+const db = require('./db');
 
 // 1. GET: Fetch all payments for Tracker
 router.get('/payments', async (req, res) => {
