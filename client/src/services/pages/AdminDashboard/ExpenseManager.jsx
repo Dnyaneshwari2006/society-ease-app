@@ -70,6 +70,7 @@ function ExpenseManager() {
                     <div className="input-group">
                         <label>Spent Date</label>
                         <input type="date" value={expense.spent_date}
+                         max={today}
                             onChange={(e) => setExpense({...expense, spent_date: e.target.value})} required />
                     </div>
 
