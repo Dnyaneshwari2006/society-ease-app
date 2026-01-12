@@ -41,10 +41,9 @@ router.post('/generate-bills', async (req, res) => {
         const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
         const queries = residents.map(r => 
             db.query(
-                "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW())", 
-                [r.id, amount, month, year]
-            )
-        );
+            "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW())",
+            [r.id, amount, month, year]
+        ));
         await Promise.all(queries);
         res.json({ message: "Bills generated successfully!" });
     } catch (err) {
