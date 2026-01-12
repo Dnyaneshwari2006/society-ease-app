@@ -240,13 +240,15 @@ app.get('/api/resident/unpaid-bills/:id', async (req, res) => {
 app.put('/api/resident/submit-payment', async (req, res) => {
     const { payment_id, transaction_id } = req.body; 
     try {
+        // Hum existing row ko update kar rahe hain (ID 51-56 jaise rows ko)
         const query = `UPDATE payments SET transaction_id = ?, method = 'UPI', payment_date = NOW() WHERE id = ?`;
         await db.query(query, [transaction_id, payment_id]);
-        res.status(200).json({ message: "✅ Payment Recorded!" });
+        res.status(200).json({ message: "✅ Payment Recorded! Admin will verify it soon." });
     } catch (err) {
         res.status(500).json({ error: "Update failed" });
     }
 });
+
 
 // ✅ Resident history
 app.get('/api/resident/payment-history/:id', async (req, res) => {
@@ -302,6 +304,16 @@ app.post('/api/notifications', async (req, res) => {
         await db.query("INSERT INTO notifications (sender_id, message, type, created_at) VALUES (?, ?, ?, NOW())", [sender_id, message, type]);
         res.status(201).json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/resident/request-delete/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Hum database mein status update kar sakte hain (optional) ya bas success bhej sakte hain
+        res.status(200).json({ message: "Deletion request received by server" });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to process request" });
+    }
 });
 
 // --- DB CONNECTION ---

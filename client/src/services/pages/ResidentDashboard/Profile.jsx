@@ -70,21 +70,23 @@ function Profile() {
     if (!confirmDelete) return;
 
     try {
-        // 1. Purana logic update
-        await API.put(`/api/resident/request-delete/${user.id}`);
+        // ✅ Detailed Message pehle hi taiyar rakhein
+        const detailedMessage = `🚨 DELETE REQUEST: Resident ${user.name} from Flat ${user.flat_no || 'N/A'} has requested account deletion.`;
 
-        // 2. NAYA logic: Admin ko detailed message bhejhein
-        const detailedMessage = `Resident ${user.name} from Flat ${user.flat_no || 'N/A'} has requested account deletion.`;
-
+        // ✅ Step 1: Admin ko Notification bhejein (Ye zaroori hai)
         await API.post('/api/notifications', {
             sender_id: user.id,
             message: detailedMessage,
             type: 'DELETE_REQUEST'
         });
 
-        alert("Request sent! Admin can now see your details.");
+        // ✅ Step 2: Backend status update (Agar backend route add kar liya hai toh)
+        await API.put(`/api/resident/request-delete/${user.id}`);
+
+        alert("✅ Request sent! Admin has been notified.");
     } catch (err) {
-        alert("Failed to send request.");
+        console.error("Request failed:", err);
+        alert("❌ Failed to send request. Check if the server is running.");
     }
 };
 

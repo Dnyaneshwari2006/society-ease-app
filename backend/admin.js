@@ -3,13 +3,14 @@ const router = express.Router();
 const db = require('./config/db');
 
 // A. Get all Pending payments for Admin Verification (transaction_id is NOT NULL)
+// admin.js mein payments fetch route update karein
 router.get('/payments', async (req, res) => {
     try {
         const query = `
             SELECT p.*, u.name AS user_name, u.flat_no 
             FROM payments p
             JOIN users u ON p.resident_id = u.id
-            WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL
+            WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL 
             ORDER BY p.id DESC
         `;
         const [rows] = await db.query(query);
@@ -31,18 +32,21 @@ router.put('/verify-payment/:id', async (req, res) => {
 });
 
 // C. Generate Monthly Bills (System Generated Entry)
+// admin.js mein bill generation route ko aise update karein
 router.post('/generate-bills', async (req, res) => {
     const { amount, month, year } = req.body;
     try {
         const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
+        
+        // Har resident ke liye ek "Pending" entry banegi bina kisi transaction details ke
         const queries = residents.map(r => 
             db.query(
-                "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW())", 
+                "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date, transaction_id) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW(), NULL)", 
                 [r.id, amount, month, year]
             )
         );
         await Promise.all(queries);
-        res.json({ message: "Bills generated for all residents!" });
+        res.json({ message: "✅ Monthly bills generated successfully for all residents!" });
     } catch (err) {
         res.status(500).json({ error: "Failed to generate bills" });
     }
