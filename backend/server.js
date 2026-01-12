@@ -162,13 +162,47 @@ app.get('/api/admin/stats', async (req, res) => {
     }
 });
 
+// --- 💰 ADDED: EXPENSE MANAGEMENT ROUTES ---
+app.post('/api/admin/expenses', async (req, res) => {
+    const { title, category, amount, description, spent_date } = req.body;
+    try {
+        const query = `INSERT INTO expenses (title, category, amount, description, spent_date) VALUES (?, ?, ?, ?, ?)`;
+        await db.query(query, [title, category, amount, description, spent_date]);
+        res.status(200).json({ message: "Expense recorded successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: "Database error saving expense" });
+    }
+});
+
+app.get('/api/admin/expenses', async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM expenses ORDER BY spent_date DESC");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch expenses" });
+    }
+});
+
+app.get('/api/admin/financial-summary', async (req, res) => {
+    try {
+        const [income] = await db.query("SELECT SUM(amount) as total FROM payments WHERE status = 'Verified'");
+        const [expense] = await db.query("SELECT SUM(amount) as total FROM expenses");
+        res.json({
+            totalIncome: income[0].total || 0,
+            totalOutflow: expense[0].total || 0
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch financial data" });
+    }
+});
+
 // --- RESIDENT DASHBOARD STATS (FIXED LOGIC) ---
 app.get('/api/resident/dashboard-stats/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const [userRows] = await db.query("SELECT flat_no FROM users WHERE id = ?", [id]);
         
-        // ✅ Fix: Only sum bills that haven't been paid (transaction_id IS NULL)
+        // Only sum bills where resident hasn't submitted a Transaction ID yet
         const [dueRows] = await db.query(
             "SELECT SUM(amount) as pending FROM payments WHERE resident_id = ? AND status = 'Pending' AND transaction_id IS NULL", 
             [id]
@@ -188,7 +222,7 @@ app.get('/api/resident/dashboard-stats/:id', async (req, res) => {
     }
 });
 
-// ✅ ADDED: Resident Billing List (Dropdown ke liye missing tha)
+// ✅ Resident Billing List
 app.get('/api/resident/unpaid-bills/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -202,19 +236,19 @@ app.get('/api/resident/unpaid-bills/:id', async (req, res) => {
     }
 });
 
-// ✅ FIXED: Resident submit payment (Existing row update karega)
+// ✅ Resident submit payment (Update logic)
 app.put('/api/resident/submit-payment', async (req, res) => {
-    const { payment_id, transaction_id, method } = req.body;
+    const { payment_id, transaction_id } = req.body; 
     try {
-        const query = `UPDATE payments SET transaction_id = ?, method = ?, payment_date = NOW() WHERE id = ?`;
-        await db.query(query, [transaction_id, method || 'UPI', payment_id]);
-        res.status(200).json({ message: "Payment details submitted for verification!" });
+        const query = `UPDATE payments SET transaction_id = ?, method = 'UPI', payment_date = NOW() WHERE id = ?`;
+        await db.query(query, [transaction_id, payment_id]);
+        res.status(200).json({ message: "✅ Payment Recorded!" });
     } catch (err) {
         res.status(500).json({ error: "Update failed" });
     }
 });
 
-// ✅ ADDED: Resident history (Jo history missing thi)
+// ✅ Resident history
 app.get('/api/resident/payment-history/:id', async (req, res) => {
     const { id } = req.params;
     try {

@@ -2,9 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('./config/db');
 
-// ✅ FIX 1: Verification Page Query
-// Pehle ye sirf 'Pending' dhoond raha tha. 
-// Ab humein wo records chahiye jo 'Pending' hain LEKIN jinka transaction_id NULL NAHI hai.
+// A. Get all Pending payments for Admin Verification (transaction_id is NOT NULL)
 router.get('/payments', async (req, res) => {
     try {
         const query = `
@@ -12,7 +10,7 @@ router.get('/payments', async (req, res) => {
             FROM payments p
             JOIN users u ON p.resident_id = u.id
             WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL
-            ORDER BY p.payment_date DESC
+            ORDER BY p.id DESC
         `;
         const [rows] = await db.query(query);
         res.status(200).json(rows); 
@@ -21,8 +19,7 @@ router.get('/payments', async (req, res) => {
     }
 });
 
-// ✅ FIX 2: Verify Payment Logic
-// Jab Admin 'Verify' dabaye, toh hum status 'Verified' karenge.
+// B. Verify specific payment
 router.put('/verify-payment/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -51,16 +48,14 @@ router.post('/generate-bills', async (req, res) => {
     }
 });
 
-// ✅ FIX 3: Resident Dashboard Stats Sync
+// D. Resident Dashboard Stats Sync (Corrected Sum Logic)
 router.get('/resident-stats/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
-        // Dashboard par dues tabhi dikhenge jab status 'Pending' ho AUR resident ne abhi tak pay na kiya ho (transaction_id is NULL)
         const [dues] = await db.query(
            "SELECT SUM(amount) AS total FROM payments WHERE resident_id = ? AND status = 'Pending' AND transaction_id IS NULL", 
             [userId]
         );
-        
         const [complaints] = await db.query("SELECT COUNT(*) AS total FROM complaints WHERE user_id = ? AND status != 'Resolved'", [userId]);
         const [notices] = await db.query("SELECT COUNT(*) AS total FROM notices");
         const [user] = await db.query("SELECT flat_no FROM users WHERE id = ?", [userId]);
