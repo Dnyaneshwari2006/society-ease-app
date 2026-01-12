@@ -76,13 +76,99 @@ app.post('/api/admin/upload-qr', upload.single('qrCode'), async (req, res) => {
     }
 });
 
-// --- RESIDENT DASHBOARD STATS (LOGIC FIXED) ---
+// --- COMPLAINT ROUTES ---
+app.post('/api/complaints', async (req, res) => {
+    const { description, category, user_id } = req.body; 
+    if (!description || !category) return res.status(400).json({ message: "Missing data" });
+    try {
+        await db.query("INSERT INTO complaints (user_id, description, category, status) VALUES (?, ?, ?, 'Pending')", [user_id, description, category]); 
+        res.status(201).json({ message: "✅ Complaint submitted successfully!" });
+    } catch (err) {
+        res.status(500).json({ message: "❌ Database error" });
+    }
+});
+
+app.get('/api/admin/complaints', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT complaints.*, users.name, users.flat_no 
+            FROM complaints 
+            JOIN users ON complaints.user_id = users.id
+            ORDER BY complaints.created_at DESC
+        `);
+        res.status(200).json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch complaints" });
+    }
+});
+
+app.put('/api/complaints/:id/resolve', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query("UPDATE complaints SET status = 'Resolved' WHERE id = ?", [id]);
+        res.status(200).json({ message: "Complaint marked as resolved" });
+    } catch (err) {
+        res.status(500).json({ error: "Update failed" });
+    }
+});
+
+// --- NOTICE BOARD ROUTES ---
+app.post('/api/admin/notices', async (req, res) => {
+    const { title, description } = req.body;
+    try {
+        await db.query("INSERT INTO notices (title, description, created_at) VALUES (?, ?, NOW())", [title, description]);
+        res.status(201).json({ message: "✅ Notice posted successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+app.get('/api/notices', async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM notices ORDER BY created_at DESC");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/admin/notices/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query("DELETE FROM notices WHERE id = ?", [id]);
+        if (result.affectedRows === 0) return res.status(404).json({ error: "Notice not found" });
+        res.json({ message: "✅ Notice deleted successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+// --- ADMIN STATS ---
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const [residents] = await db.query("SELECT COUNT(*) as count FROM users WHERE role = 'resident'");
+        const [notices] = await db.query("SELECT COUNT(*) as count FROM notices");
+        const [complaints] = await db.query("SELECT COUNT(*) as count FROM complaints WHERE status = 'Pending'");
+        const [revenue] = await db.query("SELECT SUM(amount) as total FROM payments WHERE status = 'Verified'");
+
+        res.json({
+            totalResidents: residents[0].count,
+            totalNotices: notices[0].count,
+            pendingComplaints: complaints[0].count,
+            monthlyRevenue: revenue[0].total || 0 
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- RESIDENT DASHBOARD STATS (FIXED LOGIC) ---
 app.get('/api/resident/dashboard-stats/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const [userRows] = await db.query("SELECT flat_no FROM users WHERE id = ?", [id]);
         
-        // Sum only bills where resident hasn't submitted a Transaction ID yet
+        // ✅ Fix: Only sum bills that haven't been paid (transaction_id IS NULL)
         const [dueRows] = await db.query(
             "SELECT SUM(amount) as pending FROM payments WHERE resident_id = ? AND status = 'Pending' AND transaction_id IS NULL", 
             [id]
@@ -102,22 +188,7 @@ app.get('/api/resident/dashboard-stats/:id', async (req, res) => {
     }
 });
 
-// --- RESIDENT PAYMENT UPDATES (All-in-One Fix) ---
-
-// 1. Submit Payment (UPDATE instead of INSERT)
-app.put('/api/resident/submit-payment', async (req, res) => {
-    const { payment_id, transaction_id } = req.body; 
-    if (!transaction_id || !payment_id) return res.status(400).json({ message: "Missing Data" });
-    try {
-        const query = `UPDATE payments SET transaction_id = ?, method = 'UPI', payment_date = NOW() WHERE id = ?`;
-        await db.query(query, [transaction_id, payment_id]);
-        res.status(200).json({ message: "Payment details submitted for verification!" });
-    } catch (err) {
-        res.status(500).json({ error: "Database update failed" });
-    }
-});
-
-// 2. Unpaid Bills (For Resident Dropdown)
+// ✅ ADDED: Resident Billing List (Dropdown ke liye missing tha)
 app.get('/api/resident/unpaid-bills/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -131,54 +202,81 @@ app.get('/api/resident/unpaid-bills/:id', async (req, res) => {
     }
 });
 
-// 3. Resident History (Show Verified & Pending with TransID)
+// ✅ FIXED: Resident submit payment (Existing row update karega)
+app.put('/api/resident/submit-payment', async (req, res) => {
+    const { payment_id, transaction_id, method } = req.body;
+    try {
+        const query = `UPDATE payments SET transaction_id = ?, method = ?, payment_date = NOW() WHERE id = ?`;
+        await db.query(query, [transaction_id, method || 'UPI', payment_id]);
+        res.status(200).json({ message: "Payment details submitted for verification!" });
+    } catch (err) {
+        res.status(500).json({ error: "Update failed" });
+    }
+});
+
+// ✅ ADDED: Resident history (Jo history missing thi)
 app.get('/api/resident/payment-history/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const query = `
-            SELECT * FROM payments 
-            WHERE resident_id = ? 
-            AND (status = 'Verified' OR transaction_id IS NOT NULL)
-            ORDER BY payment_date DESC
-        `;
+        const query = `SELECT * FROM payments WHERE resident_id = ? AND (status = 'Verified' OR transaction_id IS NOT NULL) ORDER BY payment_date DESC`;
         const [rows] = await db.query(query, [id]);
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: "Failed to fetch history" });
+        res.status(500).json({ error: "History failed" });
     }
 });
 
-// --- COMPLAINTS & NOTICES ---
-app.post('/api/complaints', async (req, res) => {
-    const { description, category, user_id } = req.body; 
+// --- ADMIN: RESIDENT DIRECTORY & DELETE ---
+app.get('/api/admin/residents', async (req, res) => {
     try {
-        await db.query("INSERT INTO complaints (user_id, description, category, status) VALUES (?, ?, ?, 'Pending')", [user_id, description, category]); 
-        res.status(201).json({ message: "✅ Submitted!" });
-    } catch (err) {
-        res.status(500).json({ message: "❌ DB error" });
-    }
-});
-
-app.get('/api/notices', async (req, res) => {
-    try {
-        const [rows] = await db.query("SELECT * FROM notices ORDER BY created_at DESC");
+        const [rows] = await db.query("SELECT id, name, email, phone, flat_no FROM users WHERE role = 'resident' ORDER BY flat_no ASC");
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// --- DB CONNECTION & START ---
+app.delete('/api/admin/residents/:id', async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        await connection.query("DELETE FROM notifications WHERE sender_id = ?", [id]);
+        await connection.query("DELETE FROM complaints WHERE user_id = ?", [id]);
+        await connection.query("DELETE FROM payments WHERE resident_id = ?", [id]);
+        const [result] = await connection.query("DELETE FROM users WHERE id = ? AND role = 'resident'", [id]);
+        await connection.commit();
+        res.json({ message: "✅ Deleted!"});
+    } catch (err) {
+        await connection.rollback();
+        res.status(500).json({ error: err.message });
+    } finally { connection.release(); }
+});
+
+// --- PROFILE & NOTIFICATIONS ---
+app.get('/api/auth/me/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await db.query("SELECT id, name, email, role, flat_no FROM users WHERE id = ?", [id]);
+        res.json(rows[0]);
+    } catch (err) { res.status(500).json({ error: "DB error" }); }
+});
+
+app.post('/api/notifications', async (req, res) => {
+    const { sender_id, message, type } = req.body;
+    try {
+        await db.query("INSERT INTO notifications (sender_id, message, type, created_at) VALUES (?, ?, ?, NOW())", [sender_id, message, type]);
+        res.status(201).json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- DB CONNECTION ---
 db.getConnection()
     .then(connection => {
-        console.log('✅ MySQL Database Connected Successfully');
+        console.log('✅ MySQL Database Connected');
         connection.release();
     })
-    .catch(err => {
-        console.error('❌ Database connection failed:', err.message);
-    });
+    .catch(err => { console.error('❌ Failed:', err.message); });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => { console.log(`🚀 Running on ${PORT}`); });
