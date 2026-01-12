@@ -311,23 +311,17 @@ app.get('/api/admin/financial-summary', async (req, res) => {
     }
 });
 
-
 app.put('/api/resident/submit-payment', async (req, res) => {
-    const { payment_id, transaction_id, method } = req.body;
+    const { payment_id, transaction_id } = req.body; 
     try {
-        // Naya insert karne ke bajaye existing ID ko update karein
-        const query = `
-            UPDATE payments 
-            SET transaction_id = ?, method = ?, payment_date = NOW() 
-            WHERE id = ?
-        `;
-        await db.query(query, [transaction_id, method || 'UPI', payment_id]);
-        res.status(200).json({ message: "Payment details submitted for verification!" });
+        // Purane record mein Transaction ID bhar do, naya record mat banao
+        const query = `UPDATE payments SET transaction_id = ?, method = 'UPI', payment_date = NOW() WHERE id = ?`;
+        await db.query(query, [transaction_id, payment_id]);
+        res.status(200).json({ message: "Payment info updated!" });
     } catch (err) {
         res.status(500).json({ error: "Update failed" });
     }
 });
-
 
 
 // --- DB CONNECTION & START ---

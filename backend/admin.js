@@ -15,47 +15,44 @@ router.get('/payments', async (req, res) => {
         const [rows] = await db.query(query);
         res.status(200).json(rows); 
     } catch (err) {
-        console.error("Fetch Error:", err);
         res.status(500).json({ error: "Failed to load payments" });
     }
 });
 
-// B. Verify specific payment 
+// B. Verify specific payment (Amount verified hote hi revenue mein jayega)
 router.put('/verify-payment/:id', async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body; 
     try {
-        const query = "UPDATE payments SET status = ? WHERE id = ?";
-        const [result] = await db.query(query, [status, id]);
-        if (result.affectedRows === 0) return res.status(404).json({ message: "Payment not found" });
-        res.status(200).json({ message: "Payment Verified Successfully!", status });
+        await db.query("UPDATE payments SET status = 'Verified' WHERE id = ?", [id]);
+        res.status(200).json({ message: "Verified Successfully!" });
     } catch (err) {
-        res.status(500).json({ error: "Database error during verification" });
+        res.status(500).json({ error: "Database error" });
     }
 });
 
-// C. Generate Monthly Maintenance Bills
+// C. Generate Monthly Bills (System Generated Entry)
 router.post('/generate-bills', async (req, res) => {
     const { amount, month, year } = req.body;
     try {
         const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
         const queries = residents.map(r => 
             db.query(
-            "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW())",
-            [r.id, amount, month, year]
-        ));
+                "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW())", 
+                [r.id, amount, month, year]
+            )
+        );
         await Promise.all(queries);
-        res.json({ message: "Bills generated successfully!" });
+        res.json({ message: "Bills generated for all residents!" });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Truncated or DB Error" });
     }
 });
 
-// D. Get Resident Stats (Calculates Pending Dues)
+// D. Resident Dashboard Stats (The Real Fix for Amount)
 router.get('/resident-stats/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
-        // Only sums bills that haven't been paid (transaction_id is NULL)
+        // ✅ FIX: Sum only unpaid bills (transaction_id is NULL)
         const [dues] = await db.query(
            "SELECT SUM(amount) AS total FROM payments WHERE resident_id = ? AND status = 'Pending' AND transaction_id IS NULL", 
             [userId]
@@ -71,10 +68,8 @@ router.get('/resident-stats/:userId', async (req, res) => {
             totalNotices: notices[0]?.total || 0
         });
     } catch (err) {
-        console.error("❌ Stats Error:", err);
-        res.status(500).json({ error: "Failed to fetch stats" });
+        res.status(500).json({ error: "Stats Error" });
     }
 });
 
-// ✅ module.exports hamesha end mein hona chahiye
 module.exports = router;
