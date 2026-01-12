@@ -311,6 +311,25 @@ app.get('/api/admin/financial-summary', async (req, res) => {
     }
 });
 
+
+app.put('/api/resident/submit-payment', async (req, res) => {
+    const { payment_id, transaction_id, method } = req.body;
+    try {
+        // Naya insert karne ke bajaye existing ID ko update karein
+        const query = `
+            UPDATE payments 
+            SET transaction_id = ?, method = ?, payment_date = NOW() 
+            WHERE id = ?
+        `;
+        await db.query(query, [transaction_id, method || 'UPI', payment_id]);
+        res.status(200).json({ message: "Payment details submitted for verification!" });
+    } catch (err) {
+        res.status(500).json({ error: "Update failed" });
+    }
+});
+
+
+
 // --- DB CONNECTION & START ---
 db.getConnection()
     .then(connection => {
