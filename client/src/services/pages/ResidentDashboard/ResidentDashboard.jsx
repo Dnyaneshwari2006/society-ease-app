@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../../../api'; // Ensure path is correct
+import API from '../../../api'; 
 import './ResidentDashboard.css';
 
 function ResidentDashboard() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
     
-    // 1. Database stats ke liye state banayein
     const [dbStats, setDbStats] = useState({
         flat_no: user?.flat_no || "N/A",
         pendingDues: 0,
@@ -15,25 +14,39 @@ function ResidentDashboard() {
         totalNotices: 0
     });
 
-    // 2. Real-time data fetch karein
+    // 1. Unpaid bills store karne ke liye state (Dues kam karne ke liye zaroori)
+    const [unpaidBills, setUnpaidBills] = useState([]);
+
     useEffect(() => {
-        const fetchResidentStats = async () => {
-            try {
-                if (user?.id) {
-                const res = await API.get(`/api/resident/dashboard-stats/${user.id}`);        
-                setDbStats(res.data);
-                }
-            } catch (err) {
-                console.error("Error fetching resident stats:", err);
-            }
-        };
-        fetchResidentStats();
+        if (user?.id) {
+            fetchResidentStats();
+            fetchUnpaidBills();
+        }
     }, []);
 
-    // 3. Stats array ko state se connect karein
+    const fetchResidentStats = async () => {
+        try {
+            // ✅ Logic Fix: admin.js ka stats route call ho raha hai
+            const res = await API.get(`/api/admin/resident-stats/${user.id}`);        
+            setDbStats(res.data);
+        } catch (err) {
+            console.error("Error fetching resident stats:", err);
+        }
+    };
+
+    const fetchUnpaidBills = async () => {
+        try {
+            // ✅ Logic Fix: Sirf wahi bills uthayega jinpe payment submit nahi hui hai
+            const res = await API.get(`/api/resident/unpaid-bills/${user.id}`);
+            setUnpaidBills(res.data);
+        } catch (err) {
+            console.error("Error fetching bills:", err);
+        }
+    };
+
     const stats = [
         { label: "My Flat", count: dbStats.flat_no, icon: "🏠" },
-        { label: "Pending Dues", count: `₹${dbStats.pendingDues.toLocaleString()}`, icon: "💳" },
+        { label: "Pending Dues", count: `₹${dbStats.pendingDues}`, icon: "💳" },
         { label: "Open Complaints", count: dbStats.openComplaints, icon: "🛠️" },
         { label: "New Notices", count: dbStats.totalNotices, icon: "📢" }
     ];
@@ -50,6 +63,7 @@ function ResidentDashboard() {
                     <div key={index} className="stat-card">
                         <span className="stat-icon">{stat.icon}</span>
                         <div className="stat-details">
+                            {/* ✅ UI Fix: Pending dues agar > 0 hain toh red color mein dikhayega */}
                             <h3 style={stat.label === "Pending Dues" && dbStats.pendingDues > 0 ? {color: 'red'} : {}}>
                                 {stat.count}
                             </h3>
@@ -66,9 +80,14 @@ function ResidentDashboard() {
                         <h4>File a Complaint</h4>
                         <p>Report maintenance or security issues in your wing.</p>
                     </div>
+                    
+                    {/* ✅ Logic Fix: Navigate to payments page where resident will UPDATE the bill, not insert new one */}
                     <div className="action-box" onClick={() => navigate('/resident-dashboard/payments')}>
                         <h4>Pay Maintenance</h4>
                         <p>Quickly clear your monthly society dues online.</p>
+                        {unpaidBills.length > 0 && (
+                            <span className="pending-badge">{unpaidBills.length} Bill(s) Unpaid</span>
+                        )}
                     </div>
                 </div>
             </section>
