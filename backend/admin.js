@@ -11,13 +11,13 @@ router.get('/payments', async (req, res) => {
             SELECT p.*, u.username AS user_name, u.flat_no 
             FROM payments p
             JOIN users u ON p.resident_id = u.id
-            ORDER BY p.payment_date DESC
+            ORDER BY p.id DESC
         `;
+        // Order by ID DESC rakho taaki naye records (ID 20-25) sabse upar dikhein
         const [rows] = await db.query(query);
         res.status(200).json(rows);
     } catch (err) {
-        console.error("Fetch Error:", err);
-        res.status(500).json({ error: "Failed to load payments" });
+        res.status(500).json({ error: "Failed to load" });
     }
 });
 
@@ -45,30 +45,21 @@ module.exports = router; // ✅ Zaruri export
 
 // C. Generate Monthly Maintenance Bills for all Residents
 router.post('/generate-bills', async (req, res) => {
-    const { amount, month_name, year } = req.body; // e.g., { amount: 1000, month_name: 'Feb', year: 2026 }
-
+    const { amount, month, year } = req.body;
     try {
-        // 1. Saare residents ki list nikaalo
         const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
-
-        if (residents.length === 0) {
-            return res.status(404).json({ message: "No residents found to bill." });
-        }
-
-        // 2. Har resident ke liye ek 'Pending' record insert karo
-        const insertQueries = residents.map(r => {
-            return db.query(
-                "INSERT INTO payments (resident_id, amount, status, month_name, year) VALUES (?, ?, 'Pending', ?, ?)",
-                [r.id, amount, month_name, year]
-            );
-        });
-
-        await Promise.all(insertQueries);
-
-        res.status(200).json({ message: `Bills for ${month_name} ${year} generated for all residents!` });
+        
+        const queries = residents.map(r => 
+            db.query(
+                // ✅ Sahi columns use karein: month_name aur year
+                "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date) VALUES (?, ?, 'Pending', 'Cash', ?, ?, NOW())", 
+                [r.id, amount, month, year]
+            )
+        );
+        await Promise.all(queries);
+        res.json({ message: "Bills generated successfully!" });
     } catch (err) {
-        console.error("Billing Error:", err);
-        res.status(500).json({ error: "Could not generate bills." });
+        res.status(500).json({ error: err.message });
     }
 });
 
