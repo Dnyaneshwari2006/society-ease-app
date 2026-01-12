@@ -4,20 +4,18 @@ const db = require('./config/db');
 
 // A. Get all Pending payments for Admin Verification (transaction_id is NOT NULL)
 // admin.js mein payments fetch route update karein
+// admin.js fetch query
 router.get('/payments', async (req, res) => {
     try {
         const query = `
-            SELECT p.*, u.name AS user_name, u.flat_no 
-            FROM payments p
+            SELECT p.*, u.name AS user_name, u.flat_no FROM payments p
             JOIN users u ON p.resident_id = u.id
-            WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL 
+            WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL
             ORDER BY p.id DESC
         `;
         const [rows] = await db.query(query);
         res.status(200).json(rows); 
-    } catch (err) {
-        res.status(500).json({ error: "Failed to load payments" });
-    }
+    } catch (err) { res.status(500).json({ error: "Error" }); }
 });
 
 // B. Verify specific payment

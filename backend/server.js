@@ -272,20 +272,23 @@ app.get('/api/admin/residents', async (req, res) => {
     }
 });
 
+// --- ADMIN: DELETE ACCOUNT LOGIC ---
 app.delete('/api/admin/residents/:id', async (req, res) => {
     const { id } = req.params;
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
+        // Step 1: Pehle linked data saaf karo (Notifications, Complaints, Payments)
         await connection.query("DELETE FROM notifications WHERE sender_id = ?", [id]);
         await connection.query("DELETE FROM complaints WHERE user_id = ?", [id]);
         await connection.query("DELETE FROM payments WHERE resident_id = ?", [id]);
-        const [result] = await connection.query("DELETE FROM users WHERE id = ? AND role = 'resident'", [id]);
+        // Step 2: Phir user ko delete karo
+        await connection.query("DELETE FROM users WHERE id = ? AND role = 'resident'", [id]);
         await connection.commit();
-        res.json({ message: "✅ Deleted!"});
+        res.json({ message: "✅ Resident deleted successfully!" });
     } catch (err) {
         await connection.rollback();
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Deletion failed" });
     } finally { connection.release(); }
 });
 
@@ -301,9 +304,13 @@ app.get('/api/auth/me/:id', async (req, res) => {
 app.post('/api/notifications', async (req, res) => {
     const { sender_id, message, type } = req.body;
     try {
+        // Notification table mein entry insert karna
         await db.query("INSERT INTO notifications (sender_id, message, type, created_at) VALUES (?, ?, ?, NOW())", [sender_id, message, type]);
-        res.status(201).json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+        res.status(201).json({ success: true, message: "Notification sent to admin" });
+    } catch (err) {
+        console.error("Notification Error:", err);
+        res.status(500).json({ error: "Notification failed" });
+    }
 });
 
 app.put('/api/resident/request-delete/:id', async (req, res) => {

@@ -1,65 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import API from '../../../api'; // Aapka axios instance
+import API from '../../../api';
 import './PaymentPortal.css';
 
 function PaymentPortal() {
     const [qrUrl, setQrUrl] = useState('');
     const [societyName, setSocietyName] = useState('Society');
-    const [payment, setPayment] = useState({ 
-        amount: '', 
-        transaction_id: '', 
-        month_year: 'January 2026' 
-    });
+    const [unpaidBills, setUnpaidBills] = useState([]); // ✅ Added: To hold real bills
+    const [selectedBill, setSelectedBill] = useState(null); // ✅ Added: Selected bill from dropdown
+    const [transactionId, setTransactionId] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchSettings = async () => {
+        const fetchPortalData = async () => {
+            const user = JSON.parse(localStorage.getItem('user'));
             try {
-                const res = await API.get('/api/society/settings');
-                console.log("Database response:", res.data); 
-                
-                if (res.data && res.data.qr_image) {
-                    // ✅ FIX: Cloudinary URL direct use karein. 
-                    // Ab hume BACKEND_URL jodne ki zarurat nahi hai kyunki URL pehle se hi 'https://' hai.
-                    const fullUrl = res.data.qr_image; 
-                    
-                    console.log("Loading Image from:", fullUrl);
-                    setQrUrl(fullUrl);
-                    
-                    setSocietyName(res.data.society_name || 'Society');
-                    setPayment(prev => ({ 
-                        ...prev, 
-                        amount: res.data.maintenance_amount || '1000' 
-                    }));
-                }
+                // 1. Fetch Society Settings (QR & Name)
+                const settings = await API.get('/api/society/settings');
+                setQrUrl(settings.data.qr_image);
+                setSocietyName(settings.data.society_name || 'Society');
+
+                // 2. Fetch Actual Unpaid Bills from DB (ID 51-56 jaise)
+                const bills = await API.get(`/api/resident/unpaid-bills/${user.id}`);
+                setUnpaidBills(bills.data);
+                if (bills.data.length > 0) setSelectedBill(bills.data[0]); // Default first bill
             } catch (err) {
-                console.error("Error fetching settings:", err);
+                console.error("Portal load error:", err);
             }
         };
-        fetchSettings();
+        fetchPortalData();
     }, []);
 
     const handlePayment = async (e) => {
         e.preventDefault();
+        if (!selectedBill) return alert("No pending bills to pay!");
         setLoading(true);
 
-        const user = JSON.parse(localStorage.getItem('user'));
-        
-        const paymentData = {
-            resident_id: user.id, 
-            amount: payment.amount,
-            transaction_id: payment.transaction_id,
-            month_year: payment.month_year,
-            status: 'Pending', 
-            method: 'UPI'
-        };
-
         try {
-            await API.post('/api/resident/pay', paymentData);
-            alert(`✅ Payment for ${societyName} Recorded! Admin will verify your transaction.`);
-            setPayment({ ...payment, transaction_id: '' });
+            // ✅ FIX: Naya post nahi, existing record UPDATE karna hai
+            await API.put('/api/resident/submit-payment', {
+                payment_id: selectedBill.id, // Record ID (e.g., 51)
+                transaction_id: transactionId
+            });
+
+            alert(`✅ Payment for ${selectedBill.month_name} Recorded!`);
+            window.location.reload(); // Refresh to update dues
         } catch (err) {
-            alert(err.response?.data?.message || "❌ Payment failed to record.");
+            alert("❌ Payment failed to record.");
         } finally {
             setLoading(false);
         }
@@ -76,26 +62,23 @@ function PaymentPortal() {
                 <div className="payment-flex">
                     <div className="qr-container">
                         <div className="qr-box">
-                            {qrUrl ? (
-                                <img src={qrUrl} alt="Society QR Code" className="qr-image" />
-                            ) : (
-                                <div className="qr-placeholder">Loading QR Code...</div>
-                            )}
-                        </div>
-                        <div className="upi-details">
-                            <p>Scan to pay via any UPI App</p>
+                            {qrUrl ? <img src={qrUrl} alt="QR" className="qr-image" /> : <div className="qr-placeholder">Loading QR...</div>}
                         </div>
                     </div>
 
                     <form onSubmit={handlePayment} className="payment-form">
                         <div className="payment-input-group">
-                            <label>Amount Due (₹)</label>
-                            <input 
-                                type="number" 
-                                value={payment.amount} 
-                                readOnly 
-                                className="amount-input" 
-                            />
+                            <label>Select Bill to Pay</label>
+                            <select 
+                                onChange={(e) => setSelectedBill(unpaidBills.find(b => b.id === parseInt(e.target.value)))}
+                                className="bill-select"
+                            >
+                                {unpaidBills.map(bill => (
+                                    <option key={bill.id} value={bill.id}>
+                                        {bill.month_name} {bill.year} - ₹{bill.amount}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="payment-input-group">
@@ -103,13 +86,13 @@ function PaymentPortal() {
                             <input 
                                 type="text"
                                 placeholder="Enter 12-digit UTR" 
-                                value={payment.transaction_id}
-                                onChange={(e) => setPayment({...payment, transaction_id: e.target.value})} 
+                                value={transactionId}
+                                onChange={(e) => setTransactionId(e.target.value)} 
                                 required 
                             />
                         </div>
 
-                        <button type="submit" className="pay-submit-btn" disabled={loading}>
+                        <button type="submit" className="pay-submit-btn" disabled={loading || !selectedBill}>
                             {loading ? "Processing..." : "Confirm Payment"}
                         </button>
                     </form>
