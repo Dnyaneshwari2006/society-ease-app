@@ -305,14 +305,25 @@ app.get('/api/auth/me/:id', async (req, res) => {
 app.post('/api/notifications', async (req, res) => {
     const { sender_id, message, type } = req.body;
     try {
-        const query = "INSERT INTO notifications (sender_id, message, type, created_at) VALUES (?, ?, ?, NOW())";
-        await db.query(query, [sender_id, message, type]);
-        res.status(201).json({ success: true, message: "Admin notified!" });
+        await db.query(
+            "INSERT INTO notifications (sender_id, message, type, created_at) VALUES (?, ?, ?, NOW())",
+            [sender_id, message, type]
+        );
+        res.status(201).json({ success: true });
     } catch (err) {
-        console.error("Notification Error:", err);
-        res.status(500).json({ error: "Notification failed" });
+        res.status(500).json({ error: err.message });
     }
 });
+
+app.get('/api/admin/notifications', async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM notifications ORDER BY created_at DESC LIMIT 10");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+});
+
 
 app.put('/api/resident/request-delete/:id', async (req, res) => {
     const { id } = req.params;
@@ -321,6 +332,35 @@ app.put('/api/resident/request-delete/:id', async (req, res) => {
         res.status(200).json({ message: "Deletion request received by server" });
     } catch (err) {
         res.status(500).json({ error: "Failed to process request" });
+    }
+});
+
+// --- ADMIN: DELETE ANOTHER ADMIN ---
+// 1. Sare Admins ki list fetch karne ke liye
+app.get('/api/admin/list-admins', async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT id, name, email FROM users WHERE role = 'admin'");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch admins" });
+    }
+});
+
+// 2. Admin delete karne ke liye (With Safety Check)
+app.delete('/api/admin/remove-admin/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Step 1: Check karein ki kam se kam ek admin bachna chahiye
+        const [adminCount] = await db.query("SELECT COUNT(*) as count FROM users WHERE role = 'admin'");
+        if (adminCount[0].count <= 1) {
+            return res.status(400).json({ error: "❌ Cannot delete the only admin account!" });
+        }
+
+        // Step 2: Delete
+        await db.query("DELETE FROM users WHERE id = ? AND role = 'admin'", [id]);
+        res.json({ message: "✅ Admin removed successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: "Database error" });
     }
 });
 
