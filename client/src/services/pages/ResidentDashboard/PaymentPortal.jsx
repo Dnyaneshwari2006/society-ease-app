@@ -62,7 +62,7 @@ function PaymentPortal() {
                 type: 'PAYMENT_SUBMITTED'
             });
 
-            alert(`✅ Payment for ${selectedBill.month_name} Recorded! Admin will verify it soon.`);
+            alert(`✅ Payment for ${selectedBill.month_name} Admin will verify it soon.`);
             window.location.reload(); 
         } catch (err) {
             alert("❌ Payment failed to record. Please try again.");

@@ -5,17 +5,21 @@ const db = require('./config/db');
 // A. Get all Pending payments for Admin Verification (transaction_id is NOT NULL)
 // admin.js mein payments fetch route update karein
 // admin.js fetch query
+// admin.js mein /payments route update karein
 router.get('/payments', async (req, res) => {
     try {
         const query = `
-            SELECT p.*, u.name AS user_name, u.flat_no FROM payments p
+            SELECT p.*, u.name AS user_name, u.flat_no 
+            FROM payments p
             JOIN users u ON p.resident_id = u.id
-            WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL
-            ORDER BY p.id DESC
+            WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL 
+            ORDER BY p.payment_date DESC
         `;
         const [rows] = await db.query(query);
         res.status(200).json(rows); 
-    } catch (err) { res.status(500).json({ error: "Error" }); }
+    } catch (err) {
+        res.status(500).json({ error: "Failed to load" });
+    }
 });
 
 // B. Verify specific payment
@@ -30,16 +34,25 @@ router.put('/verify-payment/:id', async (req, res) => {
 });
 
 // C. Generate Monthly Bills (System Generated Entry)
-// admin.js mein bill generation route ko aise update karein
+// admin.js mein /generate-bills route ko aise update karein
 router.post('/generate-bills', async (req, res) => {
-    const { amount } = req.body; // Month aur Year ki body se zarurat nahi
-    
-    // ✅ Backend khud current Month aur Year calculate karega
+    const { amount } = req.body;
     const date = new Date();
     const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getFullYear();
 
     try {
+        // 1. Pehle check karein ki kya is mahine ke bills pehle se hain?
+        const [existing] = await db.query(
+            "SELECT id FROM payments WHERE month_name = ? AND year = ?", 
+            [month, year]
+        );
+
+        if (existing.length > 0) {
+            return res.status(400).json({ error: `Bills for ${month} ${year} already exist!` });
+        }
+
+        // 2. Agar nahi hain, toh hi naye banayein
         const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
         const queries = residents.map(r => 
             db.query(
@@ -48,13 +61,14 @@ router.post('/generate-bills', async (req, res) => {
             )
         );
         await Promise.all(queries);
-        res.json({ message: `✅ Bills generated for ${month} ${year}!` });
+        res.json({ message: "✅ Monthly bills generated successfully!" });
     } catch (err) {
         res.status(500).json({ error: "Failed to generate bills" });
     }
 });
 
-// D. Resident Dashboard Stats Sync (Corrected Sum Logic)
+
+// Resident Stats Sync (Corrected Sum Logic)
 router.get('/resident-stats/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
