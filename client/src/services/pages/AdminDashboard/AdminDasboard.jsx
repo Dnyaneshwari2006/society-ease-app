@@ -100,7 +100,7 @@ function AdminDashboard() {
                             <div key={notif.id} className={`notification-item ${notif.type === 'DELETE_REQUEST' ? 'urgent-notif' : ''}`}>
                                 <div className="notification-content">
                                     <p>
-                                        {notif.type === 'DELETE_REQUEST' && <strong>🚨 [URGENT] </strong>}
+                                        {notif.type === 'DELETE_REQUEST' && <strong> </strong>}
                                         {notif.message}
                                     </p>
                                     <small>{new Date(notif.created_at).toLocaleString()}</small>
@@ -110,7 +110,7 @@ function AdminDashboard() {
                                         onClick={() => navigate('/admin/residents')} 
                                         className="notification-manage-btn urgent-btn"
                                     >
-                                        View Resident
+                                        Manage Resident
                                     </button>
                                 )}
                             </div>
