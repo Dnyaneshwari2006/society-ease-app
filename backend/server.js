@@ -304,11 +304,13 @@ app.get('/api/auth/me/:id', async (req, res) => {
 app.post('/api/notifications', async (req, res) => {
     const { sender_id, message, type } = req.body;
     try {
-        // Notification table mein entry insert karna
-        await db.query("INSERT INTO notifications (sender_id, message, type, created_at) VALUES (?, ?, ?, NOW())", [sender_id, message, type]);
-        res.status(201).json({ success: true, message: "Notification sent to admin" });
+        // ✅ Table mein 'type' column 'DELETE_REQUEST' handle kar raha hai? Check karein.
+        await db.query(
+            "INSERT INTO notifications (sender_id, message, type, created_at) VALUES (?, ?, ?, NOW())", 
+            [sender_id, message, type]
+        );
+        res.status(201).json({ success: true });
     } catch (err) {
-        console.error("Notification Error:", err);
         res.status(500).json({ error: "Notification failed" });
     }
 });

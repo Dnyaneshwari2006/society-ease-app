@@ -32,19 +32,23 @@ router.put('/verify-payment/:id', async (req, res) => {
 // C. Generate Monthly Bills (System Generated Entry)
 // admin.js mein bill generation route ko aise update karein
 router.post('/generate-bills', async (req, res) => {
-    const { amount, month, year } = req.body;
+    const { amount } = req.body; // Month aur Year ki body se zarurat nahi
+    
+    // ✅ Backend khud current Month aur Year calculate karega
+    const date = new Date();
+    const month = date.toLocaleString('default', { month: 'long' });
+    const year = date.getFullYear();
+
     try {
         const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
-        
-        // Har resident ke liye ek "Pending" entry banegi bina kisi transaction details ke
         const queries = residents.map(r => 
             db.query(
-                "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date, transaction_id) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW(), NULL)", 
+                "INSERT INTO payments (resident_id, amount, status, method, month_name, year, payment_date) VALUES (?, ?, 'Pending', 'System Gen', ?, ?, NOW())", 
                 [r.id, amount, month, year]
             )
         );
         await Promise.all(queries);
-        res.json({ message: "✅ Monthly bills generated successfully for all residents!" });
+        res.json({ message: `✅ Bills generated for ${month} ${year}!` });
     } catch (err) {
         res.status(500).json({ error: "Failed to generate bills" });
     }
