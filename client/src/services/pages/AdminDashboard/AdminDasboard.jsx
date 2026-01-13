@@ -13,8 +13,8 @@ function AdminDashboard() {
         monthlyRevenue: 0 
     });
 
-    // Notifications ke liye
     const [notifications, setNotifications] = useState([]);
+    const [hasDeleteRequest, setHasDeleteRequest] = useState(false); // ✅ Red Signal ke liye
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -28,9 +28,14 @@ function AdminDashboard() {
                     monthlyRevenue: resStats.data.monthlyRevenue,
                 });
 
-                // 2. 🚀 Detailed Notifications fetch karein
+                // 2. Notifications fetch karein
                 const resNotifs = await API.get('/api/admin/notifications');
                 setNotifications(resNotifs.data);
+
+                // ✅ Check karein ki kya koi Delete Request aayi hai (Signal ke liye)
+                const deleteReqExists = resNotifs.data.some(n => n.type === 'DELETE_REQUEST');
+                setHasDeleteRequest(deleteReqExists);
+
             } catch (err) {
                 console.error("Error fetching dashboard data:", err);
             }
@@ -41,7 +46,16 @@ function AdminDashboard() {
     return (
         <div className="admin-main-content">
             <header className="dashboard-header-inline">
-                <h1>Dashboard Overview</h1>
+                <div className="header-title-flex">
+                    <h1>Dashboard Overview</h1>
+                    {/* ✅ Blinking Red Signal if Delete Request exists */}
+                    {hasDeleteRequest && (
+                        <div className="admin-signal-alert" onClick={() => navigate('/admin/residents')}>
+                            <span className="pulse-dot"></span>
+                            <span className="signal-label">Account Deletion Request!</span>
+                        </div>
+                    )}
+                </div>
             </header>
 
             {/* Stats Section */}
@@ -53,7 +67,7 @@ function AdminDashboard() {
                         <p>Total Residents</p>
                     </div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card urgent-card"> {/* Urgent style for complaints */}
                     <span className="stat-icon">⚠️</span>
                     <div className="stat-details">
                         <h3>{stats.pendingComplaints}</h3>
@@ -70,41 +84,45 @@ function AdminDashboard() {
                 <div className="stat-card">
                     <span className="stat-icon">💰</span>
                     <div className="stat-details">
-                        <h3>₹{Number(stats.monthlyRevenue || 0) / 1000}k</h3>
+                        {/* Improved Revenue display */}
+                        <h3>₹{Number(stats.monthlyRevenue).toLocaleString()}</h3>
                         <p>Monthly Revenue</p>
                     </div>
                 </div>
             </div>
 
-          {/*  Updated Notification Section */}
+            {/* Updated Notification Section */}
             <section className="notifications-section">
-            <h2>🔔 Recent Alerts & Requests</h2>
-             <div className="notification-list">
-              {notifications.length > 0 ? (
-               notifications.map((notif) => (
-                <div key={notif.id} className="notification-item">
-                    <div className="notification-content">
-                        <p>{notif.message}</p>
-                        <small>{new Date(notif.created_at).toLocaleString()}</small>
-                    </div>
-                    {notif.type === 'DELETE_REQUEST' && (
-                        <button 
-                            onClick={() => navigate('/admin/residents')} 
-                            className="notification-manage-btn"
-                        >
-                            Manage
-                        </button>
+                <h2>🔔 Recent Alerts & Requests</h2>
+                <div className="notification-list">
+                    {notifications.length > 0 ? (
+                        notifications.map((notif) => (
+                            <div key={notif.id} className={`notification-item ${notif.type === 'DELETE_REQUEST' ? 'urgent-notif' : ''}`}>
+                                <div className="notification-content">
+                                    <p>
+                                        {notif.type === 'DELETE_REQUEST' && <strong>🚨 [URGENT] </strong>}
+                                        {notif.message}
+                                    </p>
+                                    <small>{new Date(notif.created_at).toLocaleString()}</small>
+                                </div>
+                                {notif.type === 'DELETE_REQUEST' && (
+                                    <button 
+                                        onClick={() => navigate('/admin/residents')} 
+                                        className="notification-manage-btn urgent-btn"
+                                    >
+                                        View Resident
+                                    </button>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="notification-empty">
+                            <div className="notification-empty-icon">🔕</div>
+                            <p>No new notifications.</p>
+                        </div>
                     )}
                 </div>
-            ))
-        ) : (
-            <div className="notification-empty">
-                <div className="notification-empty-icon">🔕</div>
-                <p>No new notifications.</p>
-            </div>
-        )}
-          </div>
-        </section>
+            </section>
 
             <section className="quick-actions-section" style={{ marginTop: '30px' }}>
                 <h2>Quick Actions</h2>

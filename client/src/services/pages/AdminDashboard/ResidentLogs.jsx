@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Navigaton ke liye import add kiya
+import { useNavigate } from 'react-router-dom';
 import API from '../../../api'; 
 import './ResidentLogs.css';
 
@@ -7,21 +7,28 @@ function ResidentLogs() {
     const [residents, setResidents] = useState([]); 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedResident, setSelectedResident] = useState(null);
-    
-    const navigate = useNavigate(); // 2. Navigate ko yahan initialize kiya
+    const [unreadRequests, setUnreadRequests] = useState(0); // ✅ New: For Red Signal
 
-    // 1. Fetch data from DB
-    const fetchResidents = () => {
-        API.get('/api/admin/residents')
-            .then(res => {
-                console.log("Residents loaded:", res.data);
-                setResidents(res.data);
-            })
-            .catch(err => console.error("Error fetching residents:", err));
+    const navigate = useNavigate();
+
+    // 1. Fetch Residents and Notification Count
+    const fetchData = async () => {
+        try {
+            // Residents load karein
+            const res = await API.get('/api/admin/residents');
+            setResidents(res.data);
+
+            // ✅ Admin Notifications check karein (Delete Requests ke liye)
+            const notifyRes = await API.get('/api/admin/stats'); 
+            // Stats route se pendingComplaints ya specific delete requests count le sakte hain
+            setUnreadRequests(notifyRes.data.pendingComplaints || 0); 
+        } catch (err) {
+            console.error("Error loading data:", err);
+        }
     };
 
     useEffect(() => {
-        fetchResidents();
+        fetchData();
     }, []);
 
     const confirmDelete = (resident) => {
@@ -29,27 +36,14 @@ function ResidentLogs() {
         setIsDeleteModalOpen(true);
     };
 
-    // 2. Updated Delete Function
     const handleDelete = async () => {
         try {
-            // Backend call to delete
-            const response = await API.delete(`/api/admin/residents/${selectedResident.id}`);
-            
-            // Success Message
-            alert(response.data.message || `Resident ${selectedResident.name} removed successfully!`);
-            
+            const response = await API.delete(`/api/admin/residents/${selectedResident.id}`); //
+            alert(response.data.message || `Resident ${selectedResident.name} removed!`);
             setIsDeleteModalOpen(false);
-
-            // 🚀 Page refresh karne ke bajaye list ko update karenge
-            fetchResidents(); 
-            
-            // Agar aapko dashboard par bhejna hai toh:
-            // navigate('/admin-dashboard'); 
-            
+            fetchData(); // List refresh karein
         } catch (err) {
-            console.error("Delete Error:", err);
-            // Backend se exact error message dikhayega
-            const errorMsg = err.response?.data?.error || "Error deleting resident. Check backend logs.";
+            const errorMsg = err.response?.data?.error || "Error deleting resident.";
             alert(errorMsg);
         }
     };
@@ -57,8 +51,20 @@ function ResidentLogs() {
     return (
         <div className="resident-logs-page">
             <div className="header-flex">
-                <h2>👥 Resident Directory</h2>
-                <span className="count-badge">Total: {residents.length}</span>
+                <div className="title-section">
+                    <h2>👥 Resident Directory</h2>
+                    <span className="count-badge">Total: {residents.length}</span>
+                </div>
+
+                {/* ✅ RED SIGNAL SECTION: Agar requests hain toh blink karega */}
+                <div className="admin-alerts">
+                    {unreadRequests > 0 && (
+                        <div className="notification-signal" onClick={() => navigate('/admin/notifications')}>
+                            <span className="red-dot"></span>
+                            <span className="signal-text">{unreadRequests} Pending Requests</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="table-wrapper">
@@ -81,33 +87,25 @@ function ResidentLogs() {
                                     <button 
                                         className="delete-btn-action" 
                                         onClick={() => confirmDelete(res)}
-                                        title="Remove Resident"
                                     >
                                         Delete
                                     </button>
                                 </td>
                             </tr>
                         )) : (
-                            <tr>
-                                <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
-                                    No residents found.
-                                </td>
-                            </tr>
+                            <tr><td colSpan="4" style={{ textAlign: 'center' }}>No residents found.</td></tr>
                         )}
                     </tbody>
                 </table>
             </div>
 
-            {/* --- DELETE CONFIRMATION MODAL --- */}
+            {/* DELETE MODAL */}
             {isDeleteModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal-content-glass delete-modal">
                         <div className="warning-icon">⚠️</div>
                         <h3>Are you sure?</h3>
-                        <p>Do you really want to remove <strong>{selectedResident?.name}</strong>?</p>
-                        <p style={{fontSize: '12px', color: '#718096', marginTop: '-10px'}}>
-                            (This will also clear their complaints and payments history)
-                        </p>
+                        <p>Remove <strong>{selectedResident?.name}</strong>?</p>
                         <div className="modal-actions">
                             <button className="confirm-delete-btn" onClick={handleDelete}>Delete Anyway</button>
                             <button className="close-btn" onClick={() => setIsDeleteModalOpen(false)}>Cancel</button>
