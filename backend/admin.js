@@ -4,32 +4,38 @@ const db = require('./config/db');
 
 // A. Get all Pending payments for Admin Verification (transaction_id is NOT NULL)
 // admin.js mein payments fetch route update karein
-// admin.js fetch query
-// admin.js mein /payments route update karein
 router.get('/payments', async (req, res) => {
     try {
+        // Sirf wahi dikhao jo Pending hain AUR jinka transaction_id resident ne bhar diya hai
         const query = `
             SELECT p.*, u.name AS user_name, u.flat_no 
             FROM payments p
             JOIN users u ON p.resident_id = u.id
             WHERE p.status = 'Pending' AND p.transaction_id IS NOT NULL 
-            ORDER BY p.payment_date DESC
+            ORDER BY p.id DESC
         `;
         const [rows] = await db.query(query);
         res.status(200).json(rows); 
     } catch (err) {
-        res.status(500).json({ error: "Failed to load" });
+        res.status(500).json({ error: "Failed to load payments" });
     }
 });
 
 // B. Verify specific payment
-router.put('/verify-payment/:id', async (req, res) => {
-    const { id } = req.params;
+// Verified payments dekhne ke liye naya route
+router.get('/verified-payments', async (req, res) => {
     try {
-        await db.query("UPDATE payments SET status = 'Verified' WHERE id = ?", [id]);
-        res.status(200).json({ message: "✅ Payment Verified Successfully!" });
+        const query = `
+            SELECT p.*, u.name AS user_name, u.flat_no 
+            FROM payments p
+            JOIN users u ON p.resident_id = u.id
+            WHERE p.status = 'Verified' 
+            ORDER BY p.payment_date DESC
+        `;
+        const [rows] = await db.query(query);
+        res.status(200).json(rows);
     } catch (err) {
-        res.status(500).json({ error: "Database error" });
+        res.status(500).json({ error: "Error" });
     }
 });
 
