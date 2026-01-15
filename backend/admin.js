@@ -21,8 +21,6 @@ router.get('/payments', async (req, res) => {
 });
 
 // B. Verify specific payment
-// Verified payments dekhne ke liye naya route
-// Verified payments dekhne ke liye naya route
 router.get('/verified-payments', async (req, res) => {
     try {
         const query = `
