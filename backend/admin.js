@@ -3,7 +3,6 @@ const router = express.Router();
 const db = require('./config/db');
 
 // A. Get all Pending payments for Admin Verification (transaction_id is NOT NULL)
-// admin.js mein payments fetch route update karein
 router.get('/payments', async (req, res) => {
     try {
         // Sirf wahi dikhao jo Pending hain AUR jinka transaction_id resident ne bhar diya hai
@@ -22,6 +21,7 @@ router.get('/payments', async (req, res) => {
 });
 
 // B. Verify specific payment
+// Verified payments dekhne ke liye naya route
 // Verified payments dekhne ke liye naya route
 router.get('/verified-payments', async (req, res) => {
     try {
