@@ -262,7 +262,7 @@ app.get('/api/resident/payment-history/:id', async (req, res) => {
     }
 });
 
-// --- ADMIN: RESIDENT DIRECTORY & DELETE ---
+// --- ADMIN: RESIDENT DIRECTORY & DELETE (UPDATED) ---
 app.get('/api/admin/residents', async (req, res) => {
     try {
         const [rows] = await db.query("SELECT id, name, email, phone, flat_no FROM users WHERE role = 'resident' ORDER BY flat_no ASC");
@@ -272,24 +272,33 @@ app.get('/api/admin/residents', async (req, res) => {
     }
 });
 
-// --- ADMIN: DELETE ACCOUNT LOGIC ---
 app.delete('/api/admin/residents/:id', async (req, res) => {
     const { id } = req.params;
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
-        // Step 1: Pehle linked data saaf karo (Notifications, Complaints, Payments)
+
+        //Remove all data related to the resident account
         await connection.query("DELETE FROM notifications WHERE sender_id = ?", [id]);
         await connection.query("DELETE FROM complaints WHERE user_id = ?", [id]);
         await connection.query("DELETE FROM payments WHERE resident_id = ?", [id]);
-        // Step 2: Phir user ko delete karo
-        await connection.query("DELETE FROM users WHERE id = ? AND role = 'resident'", [id]);
+
+        // ✅ Step 2: Phir user ko delete karo
+        const [result] = await connection.query("DELETE FROM users WHERE id = ? AND role = 'resident'", [id]);
+        
+        if (result.affectedRows === 0) {
+            throw new Error("Resident not found");
+        }
+
         await connection.commit();
-        res.json({ message: "✅ Resident deleted successfully!" });
+        res.json({ message: "✅ Resident and all their data deleted successfully!" });
     } catch (err) {
         await connection.rollback();
-        res.status(500).json({ error: "Deletion failed" });
-    } finally { connection.release(); }
+        console.error("Deletion error:", err.message);
+        res.status(500).json({ error: "Failed to delete resident. Database rollback performed." });
+    } finally { 
+        connection.release(); 
+    }
 });
 
 // --- PROFILE & NOTIFICATIONS ---

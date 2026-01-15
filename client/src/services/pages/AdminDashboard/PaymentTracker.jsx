@@ -21,25 +21,20 @@ function PaymentTracker() {
         }
     };
 
-    const handleApprove = async (id) => {
+   const handleApprove = async (paymentId) => {
     try {
-        const response = await API.put(`/api/admin/verify-payment/${id}`, { 
-            status: 'Verified' 
-        });
-
-        if (response.status === 200) {
-            alert("✅Payment Approved!");
-
-            // 1. Update the local state so the 'Pending' badge changes to 'Verified'
-            setPayments(prevPayments => 
-                prevPayments.map(p => 
-                    p.id === id ? { ...p, status: 'Verified' } : p
-                )
-            );
-        }
+        // 1. Backend call to verify
+        await API.put(`/api/admin/verify-payment/${paymentId}`);
+        
+        // 2. ✅ SUCCESS: List se us item ko turant hatao (Filter state)
+        // Yahi step missing hone se "Failed to update UI" aata hai
+        setPayments(prev => prev.filter(p => p.id !== paymentId));
+        
+        alert("✅ Payment Verified Successfully!");
     } catch (err) {
         console.error("Approve Error:", err);
-        alert("❌ Failed to update UI.");
+        // Agar alert "Failed to update UI" aa raha hai, toh yahan logic check karein
+        alert("❌ Failed to update UI. Check if backend returned success.");
     }
 };
 

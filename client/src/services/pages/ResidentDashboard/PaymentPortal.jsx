@@ -54,14 +54,6 @@ function PaymentPortal() {
                 transaction_id: transactionId
             });
 
-            // ✅ Detailed Notification to Admin
-            const user = JSON.parse(localStorage.getItem('user'));
-            await API.post('/api/notifications', {
-                sender_id: user.id,
-                message: `📢 Payment Submitted: Resident ${user.name} paid ₹${selectedBill.amount} for ${selectedBill.month_name} ${selectedBill.year}.`,
-                type: 'PAYMENT_SUBMITTED'
-            });
-
             alert(`✅ Payment for ${selectedBill.month_name} Admin will verify it soon.`);
             window.location.reload(); 
         } catch (err) {

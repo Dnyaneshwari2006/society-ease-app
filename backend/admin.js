@@ -21,19 +21,22 @@ router.get('/payments', async (req, res) => {
 });
 
 // B. Verify specific payment
-router.get('/verified-payments', async (req, res) => {
+router.put('/verify-payment/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const query = `
-            SELECT p.*, u.name AS user_name, u.flat_no 
-            FROM payments p
-            JOIN users u ON p.resident_id = u.id
-            WHERE p.status = 'Verified' 
-            ORDER BY p.payment_date DESC
-        `;
-        const [rows] = await db.query(query);
-        res.status(200).json(rows);
+        // Status ko 'Pending' se 'Verified' karein
+        const [result] = await db.query(
+            "UPDATE payments SET status = 'Verified' WHERE id = ?", 
+            [id]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Payment not found" });
+        }
+        
+        res.json({ message: "Payment Verified!" }); // ✅ Success status bhejna zaroori hai
     } catch (err) {
-        res.status(500).json({ error: "Error" });
+        res.status(500).json({ error: "Database update failed" });
     }
 });
 

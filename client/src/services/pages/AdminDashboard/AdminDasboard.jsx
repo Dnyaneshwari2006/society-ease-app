@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../../api'; 
 import './AdminDashboard.css';
@@ -14,41 +14,48 @@ function AdminDashboard() {
     });
 
     const [notifications, setNotifications] = useState([]);
-    const [hasDeleteRequest, setHasDeleteRequest] = useState(false); // ✅ Red Signal ke liye
+    const [hasDeleteRequest, setHasDeleteRequest] = useState(false);
+
+    // ✅ Memoized function taaki auto-refresh aur manual call dono jagah use ho sake
+    const fetchDashboardData = useCallback(async () => {
+        try {
+            // 1. Stats fetch karein
+            const resStats = await API.get('/api/admin/stats');
+            setStats({
+                totalResidents: resStats.data.totalResidents,
+                pendingComplaints: resStats.data.pendingComplaints,
+                totalNotices: resStats.data.totalNotices,
+                monthlyRevenue: resStats.data.monthlyRevenue,
+            });
+
+            // 2. Notifications fetch karein
+            const resNotifs = await API.get('/api/admin/notifications');
+            const data = resNotifs.data;
+            setNotifications(data);
+
+            // ✅ Signal trigger: Check if any DELETE_REQUEST still exists in DB
+            const deleteReqExists = data.some(n => n.type === 'DELETE_REQUEST');
+            setHasDeleteRequest(deleteReqExists);
+
+        } catch (err) {
+            console.error("Error fetching dashboard data:", err);
+        }
+    }, []);
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                // 1. Stats fetch karein
-                const resStats = await API.get('/api/admin/stats');
-                setStats({
-                    totalResidents: resStats.data.totalResidents,
-                    pendingComplaints: resStats.data.pendingComplaints,
-                    totalNotices: resStats.data.totalNotices,
-                    monthlyRevenue: resStats.data.monthlyRevenue,
-                });
-
-                // 2. Notifications fetch karein
-                const resNotifs = await API.get('/api/admin/notifications');
-                setNotifications(resNotifs.data);
-
-                // ✅ Check karein ki kya koi Delete Request aayi hai (Signal ke liye)
-                const deleteReqExists = resNotifs.data.some(n => n.type === 'DELETE_REQUEST');
-                setHasDeleteRequest(deleteReqExists);
-
-            } catch (err) {
-                console.error("Error fetching dashboard data:", err);
-            }
-        };
         fetchDashboardData();
-    }, []);
+
+        // ✅ Auto-refresh every 10 seconds: Taaki deletion ke baad signal apne aap chala jaye
+        const interval = setInterval(fetchDashboardData, 10000);
+        return () => clearInterval(interval);
+    }, [fetchDashboardData]);
 
     return (
         <div className="admin-main-content">
             <header className="dashboard-header-inline">
                 <div className="header-title-flex">
                     <h1>Dashboard Overview</h1>
-                    {/* ✅ Blinking Red Signal if Delete Request exists */}
+                    {/* ✅ Blinking Red Signal: Database mein deletion request aate hi pulse karega */}
                     {hasDeleteRequest && (
                         <div className="admin-signal-alert" onClick={() => navigate('/admin/residents')}>
                             <span className="pulse-dot"></span>
@@ -67,7 +74,7 @@ function AdminDashboard() {
                         <p>Total Residents</p>
                     </div>
                 </div>
-                <div className="stat-card urgent-card"> {/* Urgent style for complaints */}
+                <div className="stat-card urgent-card">
                     <span className="stat-icon">⚠️</span>
                     <div className="stat-details">
                         <h3>{stats.pendingComplaints}</h3>
@@ -84,14 +91,13 @@ function AdminDashboard() {
                 <div className="stat-card">
                     <span className="stat-icon">💰</span>
                     <div className="stat-details">
-                        {/* Improved Revenue display */}
                         <h3>₹{Number(stats.monthlyRevenue).toLocaleString()}</h3>
                         <p>Monthly Revenue</p>
                     </div>
                 </div>
             </div>
 
-            {/* Updated Notification Section */}
+            {/* Notification Section */}
             <section className="notifications-section">
                 <h2>🔔 Recent Alerts & Requests</h2>
                 <div className="notification-list">
@@ -100,7 +106,7 @@ function AdminDashboard() {
                             <div key={notif.id} className={`notification-item ${notif.type === 'DELETE_REQUEST' ? 'urgent-notif' : ''}`}>
                                 <div className="notification-content">
                                     <p>
-                                        {notif.type === 'DELETE_REQUEST' && <strong> </strong>}
+                                        {notif.type === 'DELETE_REQUEST' && <strong>🚨 </strong>}
                                         {notif.message}
                                     </p>
                                     <small>{new Date(notif.created_at).toLocaleString()}</small>
