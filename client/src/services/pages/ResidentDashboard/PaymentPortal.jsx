@@ -49,10 +49,10 @@ function PaymentPortal() {
 
         try {
             // ✅ FIX: Existing record UPDATE logic
-            await API.put('/api/resident/submit-payment', {
-                payment_id: selectedBill.id, 
-                transaction_id: transactionId
-            });
+             await API.put('/api/resident/submit-payment', {
+             payment_id: selectedBill.id, 
+             transaction_id: transactionId
+        });
 
             alert(`✅ Payment for ${selectedBill.month_name} Admin will verify it soon.`);
             window.location.reload(); 

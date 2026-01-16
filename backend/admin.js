@@ -40,8 +40,7 @@ router.put('/verify-payment/:id', async (req, res) => {
     }
 });
 
-// C. Generate Monthly Bills (System Generated Entry)
-// admin.js mein /generate-bills route ko aise update karein
+// generate-bills route 
 router.post('/generate-bills', async (req, res) => {
     const { amount } = req.body;
     const date = new Date();
@@ -49,12 +48,13 @@ router.post('/generate-bills', async (req, res) => {
     const year = date.getFullYear();
 
     try {
-        // 1. Pehle check karein ki kya is mahine ke bills pehle se hain?
+        // 1. Check karein ki kya is mahine ka koi bhi bill pehle se hai?
         const [existing] = await db.query(
             "SELECT id FROM payments WHERE month_name = ? AND year = ?", 
             [month, year]
         );
 
+        // ✅ Agar records hain, toh error bhej do (Duplicate rokne ke liye)
         if (existing.length > 0) {
             return res.status(400).json({ error: `Bills for ${month} ${year} already exist!` });
         }
