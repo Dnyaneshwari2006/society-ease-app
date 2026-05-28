@@ -1,4 +1,4 @@
-# 🏢 SocietyEase - Modern Society Management System
+# SocietyEase - Modern Society Management System
 
 [![Vite](https://img.shields.io/badge/Vite-5.0.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vite.dev)
 [![React](https://img.shields.io/badge/React-18.2.0-20232A?style=flat&logo=react&logoColor=61DAFB)](https://react.dev)
@@ -11,27 +11,27 @@
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-### 👑 Admin Control Panel
-*   **👥 Resident Directory:** Register, view, and safely remove resident accounts (performs cascading delete for all related resident history/data).
-*   **💵 Bill Generator:** Automatically generate bulk monthly maintenance bills for all registered residents with a single click. Prevents accidental duplicate generations for the same month.
-*   **📊 Financial Summary:** Full-featured income vs. outflow tracking. Record expenditures (expense manager) and visualize financial health using interactive charts.
-*   **💳 UPI Payment Verification:** View payment requests submitted by residents (containing transaction IDs), verify transaction proofs, and update payment statuses.
-*   **📢 Notice Board Manager:** Publish important announcements or delete outdated circulars to maintain clean and current community notices.
-*   **🛠️ Society Settings:** Customize the society name, update standard maintenance amounts, and upload a custom UPI QR code to **Cloudinary** for payments.
+### Admin Control Panel
+*   **Resident Directory:** Register, view, and safely remove resident accounts (performs cascading delete for all related resident history/data).
+*   **Bill Generator:** Automatically generate bulk monthly maintenance bills for all registered residents with a single click. Prevents accidental duplicate generations for the same month.
+*   **Financial Summary:** Full-featured income vs. outflow tracking. Record expenditures (expense manager) and visualize financial health using interactive charts.
+*   **UPI Payment Verification:** View payment requests submitted by residents (containing transaction IDs), verify transaction proofs, and update payment statuses.
+*   **Notice Board Manager:** Publish important announcements or delete outdated circulars to maintain clean and current community notices.
+*   **Society Settings:** Customize the society name, update standard maintenance amounts, and upload a custom UPI QR code to **Cloudinary** for payments.
 
-### 🏡 Resident Dashboard
-*   **📈 Real-time Overview:** Instant visual stats showing total pending dues, open complaints, and newly posted community notices.
-*   **💳 UPI Payment Portal:** Scan the society's dynamically loaded UPI QR code, pay dues instantly, and submit the Transaction ID for verification.
-*   **📜 Billing & Payment History:** Track the status of all current and historical bills (e.g., Pending, Verified) with clean tabular lists.
-*   **🚨 Complaint Lodging:** File complaints under specific categories (e.g., Plumbing, Security, Electrical) and monitor resolution status.
-*   **📋 Digital Notice Board:** Real-time chronological board showcasing important notifications posted by the society administration.
-*   **👤 Profile Management:** View personal flat directory info, reset passwords securely, or request account deletions.
+### Resident Dashboard
+*   **Real-time Overview:** Instant visual stats showing total pending dues, open complaints, and newly posted community notices.
+*   **UPI Payment Portal:** Scan the society's dynamically loaded UPI QR code, pay dues instantly, and submit the Transaction ID for verification.
+*   **Billing & Payment History:** Track the status of all current and historical bills (e.g., Pending, Verified) with clean tabular lists.
+*   **Complaint Lodging:** File complaints under specific categories (e.g., Plumbing, Security, Electrical) and monitor resolution status.
+*   **Digital Notice Board:** Real-time chronological board showcasing important notifications posted by the society administration.
+*   **Profile Management:** View personal flat directory info, reset passwords securely, or request account deletions.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend (Client)
 *   **React (v18)** powered by **Vite** for blazing fast HMR and optimized builds.
@@ -50,7 +50,7 @@
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```text
 society-ease-app/
@@ -86,7 +86,7 @@ society-ease-app/
 
 ---
 
-## ⚙️ Setup and Installation
+## Setup and Installation
 
 ### 1. Database Setup
 Ensure you have a **MySQL** server running locally or hosted on a cloud service (e.g., Aiven, PlanetScale).
@@ -137,7 +137,7 @@ Ensure you have a **MySQL** server running locally or hosted on a cloud service 
 
 ---
 
-## 📦 Production Build and Compilation
+## Production Build and Compilation
 
 To verify, package, and optimize the React client for production, run:
 ```bash
@@ -148,7 +148,7 @@ This compiles your entire frontend assets, assets are optimized, tree-shaken, an
 
 ---
 
-## 🔒 Security Practices
+## Security Practices
 *   **Encrypted Secrets:** All database passwords, Resend keys, and Cloudinary APIs are loaded via environment variables rather than hardcoded in files.
 *   **Password Hashing:** Uses `bcryptjs` with salt round `10` to safely hash all resident and admin credentials.
 *   **Session Token Protection:** Standardized `jsonwebtoken (JWT)` authentication ensures routes like complaints, setting modifications, and billing remain private and protected from unauthorized requests.
