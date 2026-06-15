@@ -5,12 +5,13 @@ import './PaymentPortal.css';
 function PaymentPortal() {
     const [qrUrl, setQrUrl] = useState('');
     const [societyName, setSocietyName] = useState('Society');
+    const [upiId, setUpiId] = useState(''); // ✅ Added: State to store society/father's UPI string
     const [unpaidBills, setUnpaidBills] = useState([]); 
     const [selectedBill, setSelectedBill] = useState(null); 
     const [transactionId, setTransactionId] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // ✅ Added: Dynamic Month and Year Logic
+    // Dynamic Month and Year Logic
     const date = new Date();
     const currentMonthName = date.toLocaleString('default', { month: 'long' });
     const currentYear = date.getFullYear();
@@ -22,16 +23,16 @@ function PaymentPortal() {
             const user = JSON.parse(rawUser);
 
             try {
-                // 1. Fetch Society Settings (QR & Name)
+                // 1. Fetch Society Settings (QR, Name, and UPI ID string)
                 const settings = await API.get('/api/society/settings');
                 setQrUrl(settings.data.qr_image);
                 setSocietyName(settings.data.society_name || 'Society');
+                setUpiId(settings.data.upi_id || 'yourfather@upi'); // ✅ Captures real database UPI string
 
                 // 2. Fetch Actual Unpaid Bills from DB
                 const bills = await API.get(`/api/resident/unpaid-bills/${user.id}`);
                 setUnpaidBills(bills.data);
                 
-                // Default to the most recent bill if available
                 if (bills.data.length > 0) {
                     setSelectedBill(bills.data[0]);
                 }
@@ -42,19 +43,32 @@ function PaymentPortal() {
         fetchPortalData();
     }, []);
 
+    // ✅ Added: Generate Dynamic UPI Deep-Link when a bill is chosen
+    const generateUpiLink = () => {
+        if (!selectedBill || !upiId) return '#';
+        const amount = selectedBill.amount;
+        const note = `Maint_${selectedBill.month_name}_${selectedBill.year}`.replace(/\s+/g, '_');
+        return `upi://pay?pa=${upiId}&pn=${encodeURIComponent(societyName)}&am=${amount}&cu=INR&tn=${note}`;
+    };
+
     const handlePayment = async (e) => {
         e.preventDefault();
         if (!selectedBill) return alert("No pending bills to pay!");
+        
+        // Validation check for 12-digit structural string integrity
+        if (transactionId.trim().length !== 12) {
+            return alert("⚠️ Please enter a valid 12-digit UTR/Transaction ID.");
+        }
+
         setLoading(true);
 
         try {
-            // ✅ FIX: Existing record UPDATE logic
              await API.put('/api/resident/submit-payment', {
-             payment_id: selectedBill.id, 
-             transaction_id: transactionId
-        });
+                 payment_id: selectedBill.id, 
+                 transaction_id: transactionId
+             });
 
-            alert(`✅ Payment for ${selectedBill.month_name} Admin will verify it soon.`);
+            alert(`✅ Payment for ${selectedBill.month_name} recorded! Admin will verify it soon.`);
             window.location.reload(); 
         } catch (err) {
             alert("❌ Payment failed to record. Please try again.");
@@ -81,7 +95,20 @@ function PaymentPortal() {
                             )}
                         </div>
                         <div className="upi-details">
-                            <p>Scan to pay any pending dues</p>
+                            <p className="desktop-hint">Scan to pay any pending dues</p>
+                            
+                            {/* ✅ Added: Responsive Mobile Intent Button Row */}
+                            {unpaidBills.length > 0 && (
+                                <div className="mobile-payment-actions">
+                                    <span className="or-divider">—— Mobile Alternative ——</span>
+                                    <a href={generateUpiLink()} className="upi-intent-btn">
+                                        🚀 Open PhonePe / GPay / Paytm
+                                    </a>
+                                    <p className="amount-indicator">
+                                        Amount: <strong>₹{selectedBill?.amount}</strong>
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -101,7 +128,7 @@ function PaymentPortal() {
                                     ))}
                                 </select>
                             ) : (
-                                <div className="no-bills-alert">✅ All bills are paid!</div>
+                                <div className="no-bills-alert">All bills are paid!</div>
                             )}
                         </div>
 
@@ -109,9 +136,11 @@ function PaymentPortal() {
                             <label>Transaction ID / UTR Number</label>
                             <input 
                                 type="text"
+                                maxLength="12"
                                 placeholder="Enter 12-digit UTR from receipt" 
                                 value={transactionId}
-                                onChange={(e) => setTransactionId(e.target.value)} 
+                                // Strips non-digits so users don't type text by accident
+                                onChange={(e) => setTransactionId(e.target.value.replace(/\D/g, ''))} 
                                 required 
                                 disabled={unpaidBills.length === 0}
                             />

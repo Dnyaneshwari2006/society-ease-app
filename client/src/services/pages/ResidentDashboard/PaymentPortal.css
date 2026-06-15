@@ -58,6 +58,7 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    width: 100%;
 }
 
 /* QR Box - Perfect Square with Rounded Corners */
@@ -103,13 +104,17 @@
     font-weight: 500;
 }
 
-/* UPI Details */
+/* UPI Details Wrapper */
 .upi-details {
     text-align: center;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
-.upi-details p {
+.desktop-hint {
     font-size: 0.9rem;
     color: #667eea;
     font-weight: 600;
@@ -117,13 +122,77 @@
     padding: 0.7rem 1.5rem;
     border-radius: 12px;
     border: 1px solid rgba(102, 126, 234, 0.2);
+    width: 100%;
+    box-sizing: border-box;
 }
+
+/* ==========================================================================
+   ✅ ADDED: Mobile Deep-Linking Action Layout Elements
+   ========================================================================== */
+.mobile-payment-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.or-divider {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #a0aec0;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0.25rem 0;
+}
+
+/* Purple Gradient Launcher matching your master button styling */
+.upi-intent-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.25);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.upi-intent-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+    filter: brightness(1.05);
+}
+
+.upi-intent-btn:active {
+    transform: translateY(0);
+}
+
+.amount-indicator {
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.amount-indicator strong {
+    color: #2d3748;
+}
+
+/* ==========================================================================
+   End Added Elements Block
+   ========================================================================== */
 
 /* Payment Form */
 .payment-form {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    width: 100%;
 }
 
 /* Bill Select Dropdown */
@@ -271,6 +340,11 @@
     .qr-container {
         margin: 0 auto;
     }
+
+    /* ✅ Adaptive scaling for mobile action rows */
+    .upi-intent-btn {
+        max-width: 340px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -306,7 +380,7 @@
         border-radius: 12px;
     }
 
-    .upi-details p {
+    .desktop-hint {
         font-size: 0.85rem;
         padding: 0.6rem 1.25rem;
     }
@@ -323,5 +397,11 @@
     .pay-submit-btn {
         padding: 1rem;
         font-size: 0.95rem;
+    }
+
+    /* ✅ Squeeze text padding sizes elegantly for small screen real estate */
+    .upi-intent-btn {
+        padding: 0.9rem;
+        font-size: 0.9rem;
     }
 }
