@@ -3,7 +3,7 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { Resend } = require('resend'); 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 module.exports = function(router, db) {
 
@@ -84,6 +84,11 @@ module.exports = function(router, db) {
         const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
         const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
+
+        if (!resend) {
+            console.error("Resend API key is missing. Reset email could not be sent.");
+            return res.status(500).send("Email service not configured.");
+        }
 
         await resend.emails.send({
             from: 'onboarding@resend.dev', 
