@@ -70,17 +70,16 @@ function Profile() {
     if (!confirmDelete) return;
 
     try {
-        // ✅ Detailed Message pehle hi taiyar rakhein
         const detailedMessage = `🚨 DELETE REQUEST: Resident ${user.name} from Flat ${user.flat_no || 'N/A'} has requested account deletion.`;
 
-        // ✅ Step 1: Admin ko Notification bhejein (Ye zaroori hai)
+        // Send deletion notification to admin
         await API.post('/api/notifications', {
             sender_id: user.id,
             message: detailedMessage,
             type: 'DELETE_REQUEST'
         });
 
-        // ✅ Step 2: Backend status update (Agar backend route add kar liya hai toh)
+        // Update backend status
         await API.put(`/api/resident/request-delete/${user.id}`);
 
         alert("✅ Request sent! Admin has been notified.");

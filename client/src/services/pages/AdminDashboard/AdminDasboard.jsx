@@ -16,10 +16,9 @@ function AdminDashboard() {
     const [notifications, setNotifications] = useState([]);
     const [hasDeleteRequest, setHasDeleteRequest] = useState(false);
 
-    // ✅ Memoized function taaki auto-refresh aur manual call dono jagah use ho sake
     const fetchDashboardData = useCallback(async () => {
         try {
-            // 1. Stats fetch karein
+            // Fetch stats
             const resStats = await API.get('/api/admin/stats');
             setStats({
                 totalResidents: resStats.data.totalResidents,
@@ -28,12 +27,11 @@ function AdminDashboard() {
                 monthlyRevenue: resStats.data.monthlyRevenue,
             });
 
-            // 2. Notifications fetch karein
+            // Fetch notifications
             const resNotifs = await API.get('/api/admin/notifications');
             const data = resNotifs.data;
             setNotifications(data);
 
-            // ✅ Signal trigger: Check if any DELETE_REQUEST still exists in DB
             const deleteReqExists = data.some(n => n.type === 'DELETE_REQUEST');
             setHasDeleteRequest(deleteReqExists);
 
@@ -45,7 +43,7 @@ function AdminDashboard() {
     useEffect(() => {
         fetchDashboardData();
 
-        // ✅ Auto-refresh every 10 seconds: Taaki deletion ke baad signal apne aap chala jaye
+        // Auto-refresh dashboard data every 10 seconds
         const interval = setInterval(fetchDashboardData, 10000);
         return () => clearInterval(interval);
     }, [fetchDashboardData]);
@@ -55,7 +53,6 @@ function AdminDashboard() {
             <header className="dashboard-header-inline">
                 <div className="header-title-flex">
                     <h1>Dashboard Overview</h1>
-                    {/* ✅ Blinking Red Signal: Database mein deletion request aate hi pulse karega */}
                     {hasDeleteRequest && (
                         <div className="admin-signal-alert" onClick={() => navigate('/admin/residents')}>
                             <span className="pulse-dot"></span>

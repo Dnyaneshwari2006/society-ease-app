@@ -77,4 +77,4 @@ const handleSubmit = async (e) => {
     );
 }
 
-export default ComplaintForm; // THE CRITICAL LINE
+export default ComplaintForm;

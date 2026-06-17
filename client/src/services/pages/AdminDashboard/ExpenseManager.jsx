@@ -11,15 +11,13 @@ function ExpenseManager() {
         spent_date: '' 
     });
 
-    // ✅ FIX 1: Define 'today' to prevent ReferenceError
-    // Isse calendar mein future dates block ho jayengi
     const today = new Date().toISOString().split('T')[0];
     
     const handleSubmit = async (e) => {
         e.preventDefault();
         
         try {
-            // ✅ Cleaned: Directly sending 'expense' state is more efficient
+
             const res = await API.post('/api/admin/expenses', expense);
             alert("✅ " + res.data.message);
             
@@ -67,7 +65,7 @@ function ExpenseManager() {
                         <input 
                             type="date" 
                             value={expense.spent_date}
-                            max={today} // ✅ Future dates blocked
+                            max={today}
                             onChange={(e) => setExpense({...expense, spent_date: e.target.value})} 
                             required 
                         />

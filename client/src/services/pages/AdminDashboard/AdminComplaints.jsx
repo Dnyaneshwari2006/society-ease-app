@@ -45,7 +45,6 @@ function AdminComplaints() {
                         <p className="loading-text">Fetching latest reports...</p>
                     </div>
                 ) : (
-                    /* ZARURI: Table ko is wrapper mein rakha hai scroll ke liye */
                     <div className="table-responsive-wrapper">
                         <table className="complaints-table">
                             <thead>

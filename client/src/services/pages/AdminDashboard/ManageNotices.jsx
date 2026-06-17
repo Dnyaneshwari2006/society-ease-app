@@ -50,7 +50,6 @@ function ManageNotices() {
 
     return (
         <div className="admin-page-container">
-            {/* Pehla Card: Post Announcement Form */}
             <div className="form-container-glass">
                 <div className="form-header">
                     <h2>Society Announcements</h2>
@@ -86,7 +85,6 @@ function ManageNotices() {
                 </form>
             </div>
 
-            {/* Dusra Card: Notice History - Mobile par ye upar-niche stack ho jayega */}
             <div className="form-container-glass">
                 <div className="form-header">
                     <h3>Notice History</h3>

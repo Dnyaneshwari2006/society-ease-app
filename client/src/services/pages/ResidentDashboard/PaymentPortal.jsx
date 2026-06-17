@@ -10,8 +10,6 @@ function PaymentPortal() {
     const [selectedBill, setSelectedBill] = useState(null); 
     const [transactionId, setTransactionId] = useState('');
     const [loading, setLoading] = useState(false);
-
-    // Dynamic Month and Year Logic
     const date = new Date();
     const currentMonthName = date.toLocaleString('default', { month: 'long' });
     const currentYear = date.getFullYear();

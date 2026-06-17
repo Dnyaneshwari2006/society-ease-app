@@ -21,17 +21,11 @@ function Register() {
     const dataToSubmit = { ...formData, role: finalRole };
 
     try {
-        // ✅ CORRECT PATH: 
-        // 1. Aapka baseURL sirf domain hai (image_cfc302.png)
-        // 2. Server.js mein prefix '/api/auth' hai
-        // 3. Auth.js mein route '/register' hai
-        // Isliye total rasta banta hai: /api/auth/register
         const response = await API.post('/api/auth/register', dataToSubmit); 
         
         alert(`Registered successfully as ${finalRole}!`);
         navigate('/login'); 
     } catch (err) {
-        // Backend se aane wala error message dikhayega (e.g., "Email already exists")
         const msg = err?.response?.data || 'Register failed';
         alert(msg);
         console.error("Registration Error:", err);
@@ -56,7 +50,6 @@ function Register() {
                     <input className="register-input" type="text" placeholder="Flat Number (e.g., B-402)" 
                         onChange={(e) => setFormData({...formData, flat_no: e.target.value})} required />
 
-                    {/* REPLACED Role input with Secret Key input */}
                     <input 
                         className="register-input" 
                         type="password" 

@@ -21,7 +21,7 @@ function Login() {
         if (res.data.user.role === 'admin') {
             navigate('/admin'); // This sends you to the admin side
         } else {
-            navigate('/resident-dashboard'); // This sends you to image_b3c256.png
+            navigate('/resident-dashboard');
         }
     } catch (err) {
         alert("Login failed.");
@@ -31,11 +31,9 @@ function Login() {
     const handleForgotPassword = async (e) => {
     e.preventDefault();
     try {
-        // ERROR FIX: Must match the backend prefix '/api/auth'
         const res = await API.post('/api/auth/forgot-password', { email });
         alert(res.data); // Should show "Credentials sent to your email!"
     } catch (err) {
-        // This is what triggers the "Could not find that email" alert
         alert(err.response?.data || "Something went wrong");
     }
 };
@@ -69,7 +67,6 @@ function Login() {
                     >
                         Forgot Password?
                     </span>
-                    {/* Using <a> or <Link> is fine, but make sure the route matches App.jsx */}
                     <a href="/register" style={{ color: '#764ba2', textDecoration: 'none', fontWeight: '500' }}>
                         Create Account
                     </a>

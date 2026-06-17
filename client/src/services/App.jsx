@@ -4,7 +4,6 @@ import { HiMenu, HiX } from 'react-icons/hi'; // Import hamburger icons
 import API from '../api'; 
 import '../App.css';
 
-// All your imports remain the same
 import AdminDashboard from './pages/AdminDashboard/AdminDasboard';
 import PaymentTracker from './pages/AdminDashboard/PaymentTracker';
 import AdminComplaints from './pages/AdminDashboard/AdminComplaints';

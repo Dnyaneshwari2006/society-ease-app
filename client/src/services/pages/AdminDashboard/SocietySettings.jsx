@@ -10,7 +10,7 @@ function SocietySettings() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [billLoading, setBillLoading] = useState(false); // Bill generation ke liye alag loading
+    const [billLoading, setBillLoading] = useState(false);
 
     useEffect(() => {
         fetchSettings();

@@ -3,13 +3,17 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { Resend } = require('resend'); 
-const resend = new Resend(process.env.RESEND_API_KEY); // Direct key mat likho!// Yahan apni key paste karo; // Yahan apni key paste karo
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 module.exports = function(router, db) {
 
     // 1. Register Route
     router.post('/register', async (req, res) => {
         const { name, email, password, flat_no, role } = req.body;
+        if (!name || !email || !password) return res.status(400).send('Name, email, and password are required.');
+        if (password.length < 6) return res.status(400).send('Password must be at least 6 characters.');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) return res.status(400).send('Invalid email format.');
         try {
             const hashedPassword = await bcrypt.hash(password, 10);
             const finalRole = role || 'resident';
@@ -32,6 +36,7 @@ module.exports = function(router, db) {
     // 2. Login Route
     router.post('/login', async (req, res) => {
         const { email, password } = req.body;
+        if (!email || !password) return res.status(400).send('Email and password are required.');
         try {
             const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
             if (users.length === 0) {
@@ -65,6 +70,7 @@ module.exports = function(router, db) {
     // 3. Forgot Password Route
     router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
+    if (!email) return res.status(400).send('Email is required.');
     try {
         const [users] = await db.query("SELECT id, name FROM users WHERE email = ?", [email]);
         if (users.length === 0) return res.status(404).send("Email not found.");
@@ -78,10 +84,10 @@ module.exports = function(router, db) {
         const FRONTEND_URL = "https://society-ease-app-k27x.onrender.com"; 
         const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
-        // Resend API se Real Email bhej rahe hain
+
         await resend.emails.send({
             from: 'onboarding@resend.dev', 
-            to: email, // Aapka real gmail id
+            to: email,
             subject: 'SocietyEase - Reset Password',
             html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`
         });
@@ -98,6 +104,7 @@ module.exports = function(router, db) {
     router.post('/reset-password/:token', async (req, res) => {
         const { token } = req.params;
         const { newPassword } = req.body;
+        if (!newPassword || newPassword.length < 6) return res.status(400).send('Password must be at least 6 characters.');
         try {
             const [users] = await db.query(
                 "SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()",

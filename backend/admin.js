@@ -5,7 +5,7 @@ const db = require('./config/db');
 // A. Get all Pending payments for Admin Verification (transaction_id is NOT NULL)
 router.get('/payments', async (req, res) => {
     try {
-        // Sirf wahi dikhao jo Pending hain AUR jinka transaction_id resident ne bhar diya hai
+
         const query = `
             SELECT p.*, u.name AS user_name, u.flat_no 
             FROM payments p
@@ -24,7 +24,7 @@ router.get('/payments', async (req, res) => {
 router.put('/verify-payment/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        // Status ko 'Pending' se 'Verified' karein
+
         const [result] = await db.query(
             "UPDATE payments SET status = 'Verified' WHERE id = ?", 
             [id]
@@ -34,7 +34,7 @@ router.put('/verify-payment/:id', async (req, res) => {
             return res.status(404).json({ error: "Payment not found" });
         }
         
-        res.json({ message: "Payment Verified!" }); // ✅ Success status bhejna zaroori hai
+        res.json({ message: "Payment Verified!" });
     } catch (err) {
         res.status(500).json({ error: "Database update failed" });
     }
@@ -43,23 +43,26 @@ router.put('/verify-payment/:id', async (req, res) => {
 // generate-bills route 
 router.post('/generate-bills', async (req, res) => {
     const { amount } = req.body;
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+        return res.status(400).json({ error: 'A valid positive amount is required.' });
+    }
     const date = new Date();
     const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getFullYear();
 
     try {
-        // 1. Check karein ki kya is mahine ka koi bhi bill pehle se hai?
+        // Check if bills already exist for this month
         const [existing] = await db.query(
             "SELECT id FROM payments WHERE month_name = ? AND year = ?", 
             [month, year]
         );
 
-        // ✅ Agar records hain, toh error bhej do (Duplicate rokne ke liye)
+        // Prevent duplicate bill generation
         if (existing.length > 0) {
             return res.status(400).json({ error: `Bills for ${month} ${year} already exist!` });
         }
 
-        // 2. Agar nahi hain, toh hi naye banayein
+        // Generate new bills for all residents
         const [residents] = await db.query("SELECT id FROM users WHERE role = 'resident'");
         const queries = residents.map(r => 
             db.query(

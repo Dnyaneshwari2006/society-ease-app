@@ -14,7 +14,6 @@ function ResidentDashboard() {
         totalNotices: 0
     });
 
-    // 1. Unpaid bills store karne ke liye state (Dues kam karne ke liye zaroori)
     const [unpaidBills, setUnpaidBills] = useState([]);
 
     useEffect(() => {
@@ -26,7 +25,6 @@ function ResidentDashboard() {
 
     const fetchResidentStats = async () => {
         try {
-            // ✅ Logic Fix: admin.js ka stats route call ho raha hai
             const res = await API.get(`/api/admin/resident-stats/${user.id}`);        
             setDbStats(res.data);
         } catch (err) {
@@ -36,7 +34,6 @@ function ResidentDashboard() {
 
     const fetchUnpaidBills = async () => {
         try {
-            // ✅ Logic Fix: Sirf wahi bills uthayega jinpe payment submit nahi hui hai
             const res = await API.get(`/api/resident/unpaid-bills/${user.id}`);
             setUnpaidBills(res.data);
         } catch (err) {
@@ -63,7 +60,6 @@ function ResidentDashboard() {
                     <div key={index} className="stat-card">
                         <span className="stat-icon">{stat.icon}</span>
                         <div className="stat-details">
-                            {/* ✅ UI Fix: Pending dues agar > 0 hain toh red color mein dikhayega */}
                             <h3 style={stat.label === "Pending Dues" && dbStats.pendingDues > 0 ? {color: 'red'} : {}}>
                                 {stat.count}
                             </h3>
@@ -81,7 +77,6 @@ function ResidentDashboard() {
                         <p>Report maintenance or security issues in your wing.</p>
                     </div>
                     
-                    {/* ✅ Logic Fix: Navigate to payments page where resident will UPDATE the bill, not insert new one */}
                     <div className="action-box" onClick={() => navigate('/resident-dashboard/payments')}>
                         <h4>Pay Maintenance</h4>
                         <p>Quickly clear your monthly society dues online.</p>

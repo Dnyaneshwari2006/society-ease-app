@@ -57,6 +57,8 @@ app.get('/api/society/settings', async (req, res) => {
 
 app.put('/api/admin/update-society-settings', async (req, res) => {
     const { society_name, maintenance_amount } = req.body;
+    if (!society_name || society_name.trim().length === 0) return res.status(400).json({ error: 'Society name is required.' });
+    if (!maintenance_amount || isNaN(maintenance_amount) || Number(maintenance_amount) <= 0) return res.status(400).json({ error: 'Maintenance amount must be a positive number.' });
     try {
         await db.query("UPDATE society_settings SET society_name = ?, maintenance_amount = ? WHERE id = 1", [society_name, maintenance_amount]);
         res.json({ message: "✅ Society details updated successfully!" });
@@ -78,8 +80,11 @@ app.post('/api/admin/upload-qr', upload.single('qrCode'), async (req, res) => {
 
 // --- COMPLAINT ROUTES ---
 app.post('/api/complaints', async (req, res) => {
-    const { description, category, user_id } = req.body; 
-    if (!description || !category) return res.status(400).json({ message: "Missing data" });
+    const { description, category, user_id } = req.body;
+    const allowedCategories = ['Plumbing', 'Electricity', 'Security', 'Cleaning', 'Others'];
+    if (!description || description.trim().length === 0) return res.status(400).json({ message: 'Description is required.' });
+    if (!category || !allowedCategories.includes(category)) return res.status(400).json({ message: 'Invalid category.' });
+    if (!user_id || isNaN(user_id)) return res.status(400).json({ message: 'Valid user ID is required.' });
     try {
         await db.query("INSERT INTO complaints (user_id, description, category, status) VALUES (?, ?, ?, 'Pending')", [user_id, description, category]); 
         res.status(201).json({ message: "✅ Complaint submitted successfully!" });
@@ -115,6 +120,8 @@ app.put('/api/complaints/:id/resolve', async (req, res) => {
 // --- NOTICE BOARD ROUTES ---
 app.post('/api/admin/notices', async (req, res) => {
     const { title, description } = req.body;
+    if (!title || title.trim().length === 0) return res.status(400).json({ error: 'Title is required.' });
+    if (!description || description.trim().length === 0) return res.status(400).json({ error: 'Description is required.' });
     try {
         await db.query("INSERT INTO notices (title, description, created_at) VALUES (?, ?, NOW())", [title, description]);
         res.status(201).json({ message: "✅ Notice posted successfully!" });
@@ -162,9 +169,11 @@ app.get('/api/admin/stats', async (req, res) => {
     }
 });
 
-// --- 💰 ADDED: EXPENSE MANAGEMENT ROUTES ---
+// --- EXPENSE MANAGEMENT ROUTES ---
 app.post('/api/admin/expenses', async (req, res) => {
     const { title, category, amount, description, spent_date } = req.body;
+    if (!title || !category || !amount || !spent_date) return res.status(400).json({ error: 'Title, category, amount, and date are required.' });
+    if (isNaN(amount) || Number(amount) <= 0) return res.status(400).json({ error: 'Amount must be a positive number.' });
     try {
         const query = `INSERT INTO expenses (title, category, amount, description, spent_date) VALUES (?, ?, ?, ?, ?)`;
         await db.query(query, [title, category, amount, description, spent_date]);
@@ -222,7 +231,7 @@ app.get('/api/resident/dashboard-stats/:id', async (req, res) => {
     }
 });
 
-// ✅ Resident Billing List
+// Resident Billing List
 app.get('/api/resident/unpaid-bills/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -236,11 +245,14 @@ app.get('/api/resident/unpaid-bills/:id', async (req, res) => {
     }
 });
 
-// ✅ Resident submit payment (Update logic)
+// Resident submit payment
 app.put('/api/resident/submit-payment', async (req, res) => {
-    const { payment_id, transaction_id } = req.body; 
+    const { payment_id, transaction_id } = req.body;
+    if (!payment_id || !transaction_id || transaction_id.trim().length === 0) {
+        return res.status(400).json({ error: 'Payment ID and Transaction ID are required.' });
+    }
     try {
-        // Hum existing row ko update kar rahe hain (ID 51-56 jaise rows ko)
+
         const query = `UPDATE payments SET transaction_id = ?, method = 'UPI', payment_date = NOW() WHERE id = ?`;
         await db.query(query, [transaction_id, payment_id]);
         res.status(200).json({ message: "✅ Payment Recorded! Admin will verify it soon." });
@@ -250,7 +262,7 @@ app.put('/api/resident/submit-payment', async (req, res) => {
 });
 
 
-// ✅ Resident history
+// Resident payment history
 app.get('/api/resident/payment-history/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -283,7 +295,7 @@ app.delete('/api/admin/residents/:id', async (req, res) => {
         await connection.query("DELETE FROM complaints WHERE user_id = ?", [id]);
         await connection.query("DELETE FROM payments WHERE resident_id = ?", [id]);
 
-        // ✅ Step 2: Phir user ko delete karo
+        // Delete the user record
         const [result] = await connection.query("DELETE FROM users WHERE id = ? AND role = 'resident'", [id]);
         
         if (result.affectedRows === 0) {
@@ -310,7 +322,7 @@ app.get('/api/auth/me/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: "DB error" }); }
 });
 
-// server.js mein ye route check karein
+
 app.post('/api/notifications', async (req, res) => {
     const { sender_id, message, type } = req.body;
     try {
@@ -337,7 +349,7 @@ app.get('/api/admin/notifications', async (req, res) => {
 app.put('/api/resident/request-delete/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        // Hum database mein status update kar sakte hain (optional) ya bas success bhej sakte hain
+
         res.status(200).json({ message: "Deletion request received by server" });
     } catch (err) {
         res.status(500).json({ error: "Failed to process request" });
@@ -345,7 +357,7 @@ app.put('/api/resident/request-delete/:id', async (req, res) => {
 });
 
 // --- ADMIN: DELETE ANOTHER ADMIN ---
-// 1. Sare Admins ki list fetch karne ke liye
+// List all admin accounts
 app.get('/api/admin/list-admins', async (req, res) => {
     try {
         const [rows] = await db.query("SELECT id, name, email FROM users WHERE role = 'admin'");
@@ -355,11 +367,11 @@ app.get('/api/admin/list-admins', async (req, res) => {
     }
 });
 
-// 2. Admin delete karne ke liye (With Safety Check)
+// Delete admin account (with safety check)
 app.delete('/api/admin/remove-admin/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        // Step 1: Check karein ki kam se kam ek admin bachna chahiye
+        // Ensure at least one admin account remains
         const [adminCount] = await db.query("SELECT COUNT(*) as count FROM users WHERE role = 'admin'");
         if (adminCount[0].count <= 1) {
             return res.status(400).json({ error: "❌ Cannot delete the only admin account!" });

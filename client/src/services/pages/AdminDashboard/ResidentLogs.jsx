@@ -7,20 +7,18 @@ function ResidentLogs() {
     const [residents, setResidents] = useState([]); 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedResident, setSelectedResident] = useState(null);
-    const [unreadRequests, setUnreadRequests] = useState(0); // ✅ New: For Red Signal
+    const [unreadRequests, setUnreadRequests] = useState(0);
 
     const navigate = useNavigate();
 
     // 1. Fetch Residents and Notification Count
     const fetchData = async () => {
         try {
-            // Residents load karein
+            // Fetch residents
             const res = await API.get('/api/admin/residents');
             setResidents(res.data);
 
-            // ✅ Admin Notifications check karein (Delete Requests ke liye)
-            const notifyRes = await API.get('/api/admin/stats'); 
-            // Stats route se pendingComplaints ya specific delete requests count le sakte hain
+            const notifyRes = await API.get('/api/admin/stats');
             setUnreadRequests(notifyRes.data.pendingComplaints || 0); 
         } catch (err) {
             console.error("Error loading data:", err);
@@ -41,7 +39,7 @@ function ResidentLogs() {
             const response = await API.delete(`/api/admin/residents/${selectedResident.id}`); //
             alert(response.data.message || `Resident ${selectedResident.name} removed!`);
             setIsDeleteModalOpen(false);
-            fetchData(); // List refresh karein
+            fetchData();
         } catch (err) {
             const errorMsg = err.response?.data?.error || "Error deleting resident.";
             alert(errorMsg);
@@ -56,7 +54,6 @@ function ResidentLogs() {
                     <span className="count-badge">Total: {residents.length}</span>
                 </div>
 
-                {/* ✅ RED SIGNAL SECTION: Agar requests hain toh blink karega */}
                 <div className="admin-alerts">
                     {unreadRequests > 0 && (
                         <div className="notification-signal" onClick={() => navigate('/admin/notifications')}>
